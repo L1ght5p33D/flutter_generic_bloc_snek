@@ -1,10 +1,24 @@
 import 'dart:async';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sensors/sensors.dart';
-
 import 'snake.dart';
 
+var gss =  Size(300,500);
+String input_setting = "butt";
+
+TextStyle ui_but_ts = TextStyle(fontSize: gss.width*.05);
+TextStyle snek_title_style = TextStyle(fontSize: gss.height*.05,
+fontWeight: FontWeight.w700,
+  fontFamily: 'MontserratSubrayada'
+);
+
 void main() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    // DeviceOrientation.portraitDown,
+  ]);
   runApp(MyApp());
 }
 
@@ -14,9 +28,34 @@ class SnakeStart extends StatefulWidget {
 }
 
 class _SnakeStartState extends State<SnakeStart> {
-  @override
+
+
+  String dropdownValue = 'Tilt';
+
+
   Widget build(BuildContext context) {
-    return Scaffold(body: Center(child:
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      // DeviceOrientation.portraitDown,
+    ]);
+    gss = MediaQuery.of(context).size;
+
+    return Scaffold(body:
+Container(height:gss.height,
+    child:ListView(children:[
+      Container(
+        height: gss.height*.1,
+      ),
+    Container(height: gss.height*.28,
+    child: Center(child: Text("Snek_SI",
+    style: snek_title_style,
+    ),),
+    ),
+    Container(
+      padding: EdgeInsets.symmetric(horizontal: gss.width*.12),
+      width: gss.width,
+
+        child:
       GestureDetector(onTap: (){
       Navigator.push(
         context,
@@ -24,8 +63,61 @@ class _SnakeStartState extends State<SnakeStart> {
             Snek_si_play()
       )
       );},
-        child: Center(child: Text("start"),),
-      )));
+        child:
+        Container(
+            width: gss.width*.6,
+            child:
+            ClipRRect(
+                borderRadius: BorderRadius.circular(gss.width*.08),
+                child:
+            Container(
+              color: Colors.white,
+              width: gss.width*.5,
+                height: gss.width *.14,
+                padding: EdgeInsets.all(gss.width*.02),
+                child:
+    ClipRRect(
+    borderRadius: BorderRadius.circular(gss.width*.08),
+    child:
+        Container(
+          padding: EdgeInsets.all(0.0),
+          width: gss.width*.4,
+          color: Colors.blueGrey[900],
+          child:Center(child: Text("Start", style: ui_but_ts,),),))))
+      ))),
+      Container(height: gss.width*.06,),
+Container(height: gss.height * .1,child:
+  Center(child:Text("Input:",style: ui_but_ts,))
+  ,),
+Container(height: gss.width*.03,),
+      Container(
+         padding: EdgeInsets.symmetric(horizontal: gss.width*.13),
+          child: DropdownButton<String>(
+    value: dropdownValue,
+    icon: Icon(Icons.arrow_downward, color:Colors.deepPurpleAccent,),
+    iconSize: 24,
+    elevation: 16,
+    style: TextStyle(color: Colors.white),
+    underline: Container(
+    height: 2,
+    color: Colors.deepPurpleAccent,
+    ),
+    onChanged: (String newValue) {
+    setState(() {
+    dropdownValue = newValue;
+    });
+    },
+    items: <String>['Tilt', 'Touch']
+        .map<DropdownMenuItem<String>>((String value) {
+    return DropdownMenuItem<String>(
+    value: value,
+    child: Text(value,style:ui_but_ts ,),
+    );
+    }).toList(),
+    )
+  )
+    ]
+    )));
 }}
 
 
@@ -50,8 +142,8 @@ class Snek_si_play extends StatefulWidget {
 }
 
 class _Snek_si_playState extends State<Snek_si_play> {
-  static const int _snakeRows = 20;
-  static const int _snakeColumns = 20;
+  static const int _snakeRows = 40;
+  static const int _snakeColumns = 40;
   static const double _snakeCellSize = 10.0;
 
   List<double> _accelerometerValues;
@@ -60,8 +152,13 @@ class _Snek_si_playState extends State<Snek_si_play> {
   List<StreamSubscription<dynamic>> _streamSubscriptions =
   <StreamSubscription<dynamic>>[];
 
+
+bool left_press;
+bool right_press;
+
   @override
   Widget build(BuildContext context) {
+
     final List<String> accelerometer =
     _accelerometerValues?.map((double v) => v.toStringAsFixed(1))?.toList();
     final List<String> gyroscope =
@@ -69,6 +166,13 @@ class _Snek_si_playState extends State<Snek_si_play> {
     final List<String> userAccelerometer = _userAccelerometerValues
         ?.map((double v) => v.toStringAsFixed(1))
         ?.toList();
+
+    reset_press(){
+      setState(() {
+        left_press = false;
+            right_press = false;
+      });
+    }
 
     return
       WillPopScope(
@@ -83,7 +187,7 @@ class _Snek_si_playState extends State<Snek_si_play> {
       Scaffold(
       appBar: AppBar(
 
-        title: const Center(child:Text('Snek_si')),
+        title: const Center(child:Text('Snek_SI')),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -100,37 +204,74 @@ class _Snek_si_playState extends State<Snek_si_play> {
                   rows: _snakeRows,
                   columns: _snakeColumns,
                   cellSize: _snakeCellSize,
+                  input_setting: input_setting,
+                  right_press: right_press,
+                  left_press: left_press,
+                  reset_press: reset_press
                 ),
               ),
             ),
           ),
-          Padding(
+          Container(height: gss.height*.06,),
+          Container(
+            // height: gss.height*.2,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Text('Accelerometer: $accelerometer'),
-              ],
-            ),
-            padding: const EdgeInsets.all(16.0),
-          ),
-          Padding(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text('UserAccelerometer: $userAccelerometer'),
-              ],
-            ),
-            padding: const EdgeInsets.all(16.0),
-          ),
-          Padding(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text('Gyroscope: $gyroscope'),
-              ],
-            ),
-            padding: const EdgeInsets.all(16.0),
-          ),
+                GestureDetector(
+                    onTap: (){
+                      print("Left Press");
+                      setState(() {
+    left_press = true;
+    right_press = false;
+                      });
+                    },
+                    child:
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(gss.width*.08),
+                    child:
+                    Container(
+                        color: Colors.white,
+                        width: gss.width*.26,
+                        height: gss.width * .20,
+                        padding: EdgeInsets.all(gss.width*.02),
+                        child:
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(gss.width*.08),
+                            child:
+                            Container(
+                              width: gss.width*.64,
+                              color: Colors.blueGrey[900],
+                              child:Center(child: Icon(Icons.chevron_left),),))))),
+GestureDetector(
+    onTap: (){
+      print("Right press");
+      setState(() {
+right_press = true;
+left_press = false;
+      });
+    },
+    child:
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(gss.width*.08),
+                    child:
+                    Container(
+                        color: Colors.white,
+                        width: gss.width*.26,
+                        height: gss.width * .20,
+                        padding: EdgeInsets.all(gss.width*.02),
+                        child:
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(gss.width*.08),
+                            child:
+                            Container(
+                              width: gss.width*.64,
+                              color: Colors.blueGrey[900],
+                              child:Center(child: Icon(Icons.chevron_right),),))))),
+
+
+              ],),
+          )
         ],
       ),
     ));
