@@ -8,7 +8,13 @@ import 'main.dart';
 math.Random random = math.Random();
 
 class Snake extends StatefulWidget {
-  Snake({this.rows = 40, this.columns = 40, this.cellSize = 10.0}) {
+  Snake({this.rows = 40,
+    this.columns = 40,
+    this.cellSize = 10.0,
+  this.input_setting,
+  this.left_press,
+  this.right_press,
+  this.reset_press}) {
     assert(10 <= rows);
     assert(10 <= columns);
     assert(5.0 <= cellSize);
@@ -17,9 +23,18 @@ class Snake extends StatefulWidget {
   final int rows;
   final int columns;
   final double cellSize;
+  final String input_setting;
+  bool left_press;
+  bool right_press;
+  Function reset_press;
 
   @override
-  State<StatefulWidget> createState() => SnakeState(rows, columns, cellSize);
+  State<StatefulWidget> createState() => SnakeState(
+      rows, columns, cellSize, input_setting,
+  left_press,
+    right_press,
+    reset_press
+  );
 }
 
 class SnakeBoardPainter extends CustomPainter {
@@ -68,9 +83,24 @@ class SnakeBoardPainter extends CustomPainter {
 Timer snake_game_timer;
 
 class SnakeState extends State<Snake> {
-  SnakeState(int rows, int columns, this.cellSize) {
+  SnakeState(int rows, int columns,
+      this.cellSize,
+      this.input_setting,
+      this.left_press,
+      this.right_press,
+      this.reset_press
+      ) {
     state = GameState(rows, columns);
   }
+
+  String input_setting;
+bool left_press;
+bool right_press;
+Function reset_press;
+
+bool state_left;
+bool state_right;
+
 
   double cellSize;
   GameState state;
@@ -105,18 +135,71 @@ class SnakeState extends State<Snake> {
         _step();
       });
     });
+
+    state_left = false;
+    state_right = false;
+
   }
 
 
+math.Point oldDirection;
+  math.Point<int> newDirection;
 
   void _step() {
-    final math.Point<int> newDirection = acceleration == null
-        ? null
-        : acceleration.x.abs() < 1.0 && acceleration.y.abs() < 1.0
-        ? null
-        : (acceleration.x.abs() < acceleration.y.abs())
-        ? math.Point<int>(0, acceleration.y.sign.toInt())
-        : math.Point<int>(-acceleration.x.sign.toInt(), 0);
+    state_left = false;
+    state_right = false;
+
+    if (widget.right_press == true){
+      state_right = true;
+    }
+    if (widget.left_press == true){
+      state_left = true;
+    }
+    if (widget.input_setting == "acc") {
+      newDirection = acceleration == null
+          ? null
+          : acceleration.x.abs() < 1.0 && acceleration.y.abs() < 1.0
+          ? null
+          : (acceleration.x.abs() < acceleration.y.abs())
+          ? math.Point<int>(0, acceleration.y.sign.toInt())
+          : math.Point<int>(-acceleration.x.sign.toInt(), 0);
+    }
+
+///#################################3
+
+    else if (widget.input_setting == "butt") {
+      print("butt setting ");
+      if (state_right == true) {
+        print("state right true set");
+        newDirection = oldDirection == null ? math.Point(0, 1) :
+        oldDirection == math.Point(-1, 0) ? math.Point(0, 1) :
+        oldDirection == math.Point(0, 1) ? math.Point(1, 0) :
+        oldDirection == math.Point(1, 0) ? math.Point(0, -1) :
+        oldDirection == math.Point(0, -1) ? math.Point(-1, 0) : math.Point(0, 1);
+      }
+      else if (state_left == true) {
+        print("State left true set");
+        newDirection = oldDirection == null ? math.Point(0, 1) :
+        oldDirection == math.Point(-1, 0) ? math.Point(0, -1) :
+        oldDirection == math.Point(0, 1) ? math.Point(-1, 0) :
+        oldDirection == math.Point(1, 0) ? math.Point(0, 1) :
+        oldDirection == math.Point(0, -1) ? math.Point(1, 0) : math.Point(
+            0, 1);
+      }
+      else if (state_right == false &&
+          state_left == false) {
+        newDirection = oldDirection == null ? math.Point(0, 1) : oldDirection;
+      }
+    }
+
+state_right = false;
+    state_left = false;
+    widget.right_press = false;
+    widget.left_press = false;
+    reset_press();
+
+    oldDirection = newDirection;
+
     state.step(newDirection);
 
     print("state step");
@@ -145,7 +228,13 @@ class SnakeState extends State<Snake> {
 
 class GameState {
   GameState(this.rows, this.columns) {
-    snakeLength = math.min(rows, columns) - 10;
+    var snakeLength;
+    if (math.min(rows,columns) -15 > 5) {
+      snakeLength = math.min(rows, columns) - 15;
+    }
+    else{
+      snakeLength = 5;
+    }
   }
 
   int step_count = 0;
@@ -169,7 +258,7 @@ class GameState {
     if (body.length > snakeLength) body.removeAt(0);
     direction = newDirection ?? direction;
 
-    if (step_count % 37 == 0 ){
+    if (step_count % 71 == 0 ){
       print("food set:: ");
 
       int food_pt_x = random.nextInt(columns);

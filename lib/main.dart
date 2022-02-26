@@ -5,7 +5,14 @@ import 'package:sensors/sensors.dart';
 import 'snake.dart';
 
 var gss =  Size(300,500);
+String input_setting = "butt";
+
 TextStyle ui_but_ts = TextStyle(fontSize: gss.width*.09);
+TextStyle snek_title_style = TextStyle(fontSize: gss.height*.05,
+fontWeight: FontWeight.w700,
+  fontFamily: 'MontserratSubrayada'
+);
+
 void main() {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -29,8 +36,19 @@ class _SnakeStartState extends State<SnakeStart> {
     gss = MediaQuery.of(context).size;
 
     return Scaffold(body:
-
-    Center(child:
+Container(height:gss.height,
+    child:ListView(children:[
+      Container(
+        height: gss.height*.1,
+      ),
+    Container(height: gss.height*.28,
+    child: Center(child: Text("Snek_SI",
+    style: snek_title_style,
+    ),),
+    ),
+    Container(
+        width: gss.width*.66,
+        child:
       GestureDetector(onTap: (){
       Navigator.push(
         context,
@@ -55,7 +73,11 @@ class _SnakeStartState extends State<SnakeStart> {
           width: gss.width*.64,
           color: Colors.blueGrey[900],
           child:Center(child: Text("start", style: ui_but_ts,),),))))
-      )));
+      )),
+
+
+    ]
+    )));
 }}
 
 
@@ -90,8 +112,13 @@ class _Snek_si_playState extends State<Snek_si_play> {
   List<StreamSubscription<dynamic>> _streamSubscriptions =
   <StreamSubscription<dynamic>>[];
 
+
+bool left_press;
+bool right_press;
+
   @override
   Widget build(BuildContext context) {
+
     final List<String> accelerometer =
     _accelerometerValues?.map((double v) => v.toStringAsFixed(1))?.toList();
     final List<String> gyroscope =
@@ -100,8 +127,12 @@ class _Snek_si_playState extends State<Snek_si_play> {
         ?.map((double v) => v.toStringAsFixed(1))
         ?.toList();
 
-    print("len user acc vals ::: ");
-    print(_userAccelerometerValues.length.toString());
+    reset_press(){
+      setState(() {
+        left_press = false;
+            right_press = false;
+      });
+    }
 
     return
       WillPopScope(
@@ -133,37 +164,74 @@ class _Snek_si_playState extends State<Snek_si_play> {
                   rows: _snakeRows,
                   columns: _snakeColumns,
                   cellSize: _snakeCellSize,
+                  input_setting: input_setting,
+                  right_press: right_press,
+                  left_press: left_press,
+                  reset_press: reset_press
                 ),
               ),
             ),
           ),
-          Padding(
+          Container(height: gss.height*.06,),
+          Container(
+            // height: gss.height*.2,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                Text('Accelerometer: $accelerometer'),
-              ],
-            ),
-            padding: const EdgeInsets.all(16.0),
-          ),
-          Padding(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text('UserAccelerometer: $userAccelerometer'),
-              ],
-            ),
-            padding: const EdgeInsets.all(16.0),
-          ),
-          Padding(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text('Gyroscope: $gyroscope'),
-              ],
-            ),
-            padding: const EdgeInsets.all(16.0),
-          ),
+                GestureDetector(
+                    onTap: (){
+                      print("Left Press");
+                      setState(() {
+    left_press = true;
+    right_press = false;
+                      });
+                    },
+                    child:
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(gss.width*.08),
+                    child:
+                    Container(
+                        color: Colors.white,
+                        width: gss.width*.26,
+                        height: gss.width * .20,
+                        padding: EdgeInsets.all(gss.width*.02),
+                        child:
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(gss.width*.08),
+                            child:
+                            Container(
+                              width: gss.width*.64,
+                              color: Colors.blueGrey[900],
+                              child:Center(child: Icon(Icons.chevron_left),),))))),
+GestureDetector(
+    onTap: (){
+      print("Right press");
+      setState(() {
+right_press = true;
+left_press = false;
+      });
+    },
+    child:
+                ClipRRect(
+                    borderRadius: BorderRadius.circular(gss.width*.08),
+                    child:
+                    Container(
+                        color: Colors.white,
+                        width: gss.width*.26,
+                        height: gss.width * .20,
+                        padding: EdgeInsets.all(gss.width*.02),
+                        child:
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(gss.width*.08),
+                            child:
+                            Container(
+                              width: gss.width*.64,
+                              color: Colors.blueGrey[900],
+                              child:Center(child: Icon(Icons.chevron_right),),))))),
+
+
+              ],),
+          )
         ],
       ),
     ));
