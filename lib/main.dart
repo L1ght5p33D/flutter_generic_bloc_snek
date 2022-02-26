@@ -1,12 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sensors/sensors.dart';
-
 import 'snake.dart';
 
 var gss =  Size(300,500);
 TextStyle ui_but_ts = TextStyle(fontSize: gss.width*.09);
 void main() {
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    // DeviceOrientation.portraitDown,
+  ]);
   runApp(MyApp());
 }
 
@@ -18,10 +22,14 @@ class SnakeStart extends StatefulWidget {
 class _SnakeStartState extends State<SnakeStart> {
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      // DeviceOrientation.portraitDown,
+    ]);
     gss = MediaQuery.of(context).size;
 
     return Scaffold(body:
-    
+
     Center(child:
       GestureDetector(onTap: (){
       Navigator.push(
@@ -72,8 +80,8 @@ class Snek_si_play extends StatefulWidget {
 }
 
 class _Snek_si_playState extends State<Snek_si_play> {
-  static const int _snakeRows = 20;
-  static const int _snakeColumns = 20;
+  static const int _snakeRows = 40;
+  static const int _snakeColumns = 40;
   static const double _snakeCellSize = 10.0;
 
   List<double> _accelerometerValues;
@@ -91,6 +99,9 @@ class _Snek_si_playState extends State<Snek_si_play> {
     final List<String> userAccelerometer = _userAccelerometerValues
         ?.map((double v) => v.toStringAsFixed(1))
         ?.toList();
+
+    print("len user acc vals ::: ");
+    print(_userAccelerometerValues.length.toString());
 
     return
       WillPopScope(

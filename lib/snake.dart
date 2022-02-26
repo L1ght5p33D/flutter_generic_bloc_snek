@@ -4,8 +4,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:sensors/sensors.dart';
 import 'main.dart';
+
+math.Random random = math.Random();
+
 class Snake extends StatefulWidget {
-  Snake({this.rows = 20, this.columns = 20, this.cellSize = 10.0}) {
+  Snake({this.rows = 40, this.columns = 40, this.cellSize = 10.0}) {
     assert(10 <= rows);
     assert(10 <= columns);
     assert(5.0 <= cellSize);
@@ -25,7 +28,6 @@ class SnakeBoardPainter extends CustomPainter {
   GameState state;
   double cellSize;
 
-  @override
   void paint(Canvas canvas, Size size) {
     final Paint blackLine = Paint()..color = Colors.white;
     final Paint blackFilled = Paint()
@@ -35,15 +37,29 @@ class SnakeBoardPainter extends CustomPainter {
       Rect.fromPoints(Offset.zero, size.bottomLeft(Offset.zero)),
       blackLine,
     );
+
+    /// Draw snek body from state.body
     for (math.Point<int> p in state.body) {
       final Offset a = Offset(cellSize * p.x, cellSize * p.y);
       final Offset b = Offset(cellSize * (p.x + 1), cellSize * (p.y + 1));
 
       canvas.drawRect(Rect.fromPoints(a, b), blackFilled);
     }
+
+    /// Draw food if it needs
+    if(state.food_pt.x != 0 ) {
+      final Offset a =
+      Offset(cellSize * state.food_pt.x,
+          cellSize * state.food_pt.y);
+
+      final Offset b = Offset(cellSize * (state.food_pt.x + 1),
+          cellSize * (state.food_pt.y + 1));
+
+      canvas.drawRect(Rect.fromPoints(a, b), blackFilled);
+    }
   }
 
-  @override
+
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
   }
@@ -91,6 +107,8 @@ class SnakeState extends State<Snake> {
     });
   }
 
+
+
   void _step() {
     final math.Point<int> newDirection = acceleration == null
         ? null
@@ -102,12 +120,12 @@ class SnakeState extends State<Snake> {
     state.step(newDirection);
 
     print("state step");
-    print(state.gx.toString());
-    print(state.gy.toString());
-    if (state.gx < 0 ||
-        state.gy < 0 ||
-    state.gx >= state.columns -1 ||
-    state.gy >= state.rows -1
+    print(state.head_pt.x.toString());
+    print(state.head_pt.y.toString());
+    if (state.head_pt.x < 0 ||
+        state.head_pt.y < 0 ||
+    state.head_pt.x >= state.columns -1 ||
+    state.head_pt.y >= state.rows -1
 
     ){
       print("GAMEEE OVERRRRR MEERRRROOOOWWWWWWWWWWWWW");
@@ -127,27 +145,45 @@ class SnakeState extends State<Snake> {
 
 class GameState {
   GameState(this.rows, this.columns) {
-    snakeLength = math.min(rows, columns) - 5;
+    snakeLength = math.min(rows, columns) - 10;
   }
 
+  int step_count = 0;
   int rows;
   int columns;
   int snakeLength;
 
-  int gx;
-  int gy;
+  math.Point food_pt = math.Point(0,0);
+  math.Point head_pt = math.Point(0,0);
 
   List<math.Point<int>> body = <math.Point<int>>[const math.Point<int>(0, 0)];
+
   math.Point<int> direction = const math.Point<int>(1, 0);
 
-
   void step(math.Point<int> newDirection) {
+
     math.Point<int> next = body.last + direction;
     next = math.Point<int>(next.x % columns, next.y % rows);
-      gx = next.x;
-      gy = next.y;
+      head_pt = math.Point(next.x,next.y);
     body.add(next);
     if (body.length > snakeLength) body.removeAt(0);
     direction = newDirection ?? direction;
+
+    if (step_count % 37 == 0 ){
+      print("food set:: ");
+
+      int food_pt_x = random.nextInt(columns);
+      int food_pt_y = random.nextInt(rows);
+      print("x: " + food_pt_x.toString() + " y: " + food_pt_y.toString());
+      food_pt = math.Point(food_pt_x, food_pt_y);
+    }
+
+    if (head_pt.x == food_pt.x &&
+          head_pt.y == food_pt.y
+    ){
+      print("GOT FOOD WINRAR");
+      snakeLength +=1;
+    }
+    step_count += 1;
   }
 }
