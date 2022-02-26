@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:sensors/sensors.dart';
 import 'snake.dart';
 
@@ -9,6 +10,8 @@ var gss =  Size(300,500);
 String input_setting = "butt";
 
 TextStyle ui_but_ts = TextStyle(fontSize: gss.width*.05);
+TextStyle ui_ts_a = TextStyle(fontSize: gss.width*.033,
+    fontFamily: 'MontserratSubrayada');
 TextStyle snek_title_style = TextStyle(fontSize: gss.height*.05,
 fontWeight: FontWeight.w700,
   fontFamily: 'MontserratSubrayada'
@@ -60,7 +63,7 @@ Container(height:gss.height,
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) =>
-            Snek_si_play()
+            Snek_si_play(input_setting: dropdownValue,)
       )
       );},
         child:
@@ -71,10 +74,10 @@ Container(height:gss.height,
                 borderRadius: BorderRadius.circular(gss.width*.08),
                 child:
             Container(
-              color: Colors.white,
+              color: Colors.deepPurple,
               width: gss.width*.5,
                 height: gss.width *.14,
-                padding: EdgeInsets.all(gss.width*.02),
+                padding: EdgeInsets.all(gss.width*.01),
                 child:
     ClipRRect(
     borderRadius: BorderRadius.circular(gss.width*.08),
@@ -115,7 +118,18 @@ Container(height: gss.width*.03,),
     );
     }).toList(),
     )
-  )
+  ),
+
+      Container(height: gss.height*.1,),
+      Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children:[
+      Container(height: gss.height*.28,
+        child: Center(child: Text("Sigma Infinitus",
+          style: ui_ts_a,
+        ),),
+      ),])
     ]
     )));
 }}
@@ -136,7 +150,10 @@ class MyApp extends StatelessWidget {
 }
 
 class Snek_si_play extends StatefulWidget {
-  Snek_si_play({Key key}) : super(key: key);
+  Snek_si_play({Key key, this.input_setting, this.game_score}) : super(key: key);
+
+  String input_setting;
+  int game_score;
 
   _Snek_si_playState createState() => _Snek_si_playState();
 }
@@ -145,6 +162,7 @@ class _Snek_si_playState extends State<Snek_si_play> {
   static const int _snakeRows = 40;
   static const int _snakeColumns = 40;
   static const double _snakeCellSize = 10.0;
+int snake_length;
 
   List<double> _accelerometerValues;
   List<double> _userAccelerometerValues;
@@ -155,6 +173,7 @@ class _Snek_si_playState extends State<Snek_si_play> {
 
 bool left_press;
 bool right_press;
+
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +223,8 @@ bool right_press;
                   rows: _snakeRows,
                   columns: _snakeColumns,
                   cellSize: _snakeCellSize,
-                  input_setting: input_setting,
+                  snake_length: snake_length,
+                  input_setting: widget.input_setting,
                   right_press: right_press,
                   left_press: left_press,
                   reset_press: reset_press
@@ -212,7 +232,15 @@ bool right_press;
               ),
             ),
           ),
+          Container(
+          // height: gss.height*.2,
+          child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text("Score: ${GameState.snakeLength}")
+          ])),
           Container(height: gss.height*.06,),
+          widget.input_setting == "Touch"?
           Container(
             // height: gss.height*.2,
             child: Row(
@@ -271,7 +299,7 @@ left_press = false;
 
 
               ],),
-          )
+          ):Container()
         ],
       ),
     ));

@@ -5,12 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:sensors/sensors.dart';
 import 'main.dart';
 
+Timer snake_game_timer;
+
 math.Random random = math.Random();
 
 class Snake extends StatefulWidget {
   Snake({this.rows = 40,
     this.columns = 40,
     this.cellSize = 10.0,
+    this.snake_length,
   this.input_setting,
   this.left_press,
   this.right_press,
@@ -23,6 +26,7 @@ class Snake extends StatefulWidget {
   final int rows;
   final int columns;
   final double cellSize;
+  final int snake_length;
   final String input_setting;
   bool left_press;
   bool right_press;
@@ -44,9 +48,9 @@ class SnakeBoardPainter extends CustomPainter {
   double cellSize;
 
   void paint(Canvas canvas, Size size) {
-    final Paint blackLine = Paint()..color = Colors.white;
+    final Paint blackLine = Paint()..color = Colors.deepPurple;
     final Paint blackFilled = Paint()
-      ..color = Colors.white
+      ..color = Colors.deepPurple
       ..style = PaintingStyle.fill;
     canvas.drawRect(
       Rect.fromPoints(Offset.zero, size.bottomLeft(Offset.zero)),
@@ -80,7 +84,7 @@ class SnakeBoardPainter extends CustomPainter {
   }
 }
 
-Timer snake_game_timer;
+
 
 class SnakeState extends State<Snake> {
   SnakeState(int rows, int columns,
@@ -146,6 +150,7 @@ math.Point oldDirection;
   math.Point<int> newDirection;
 
   void _step() {
+    print("step inpu tsetting :: " + input_setting.toString());
     state_left = false;
     state_right = false;
 
@@ -155,7 +160,8 @@ math.Point oldDirection;
     if (widget.left_press == true){
       state_left = true;
     }
-    if (widget.input_setting == "acc") {
+
+    if (input_setting == "Tilt"){
       newDirection = acceleration == null
           ? null
           : acceleration.x.abs() < 1.0 && acceleration.y.abs() < 1.0
@@ -166,9 +172,7 @@ math.Point oldDirection;
     }
 
 ///#################################3
-
-    else if (widget.input_setting == "butt") {
-      print("butt setting ");
+  if (input_setting == "Touch"){
       if (state_left == true) {
         print("state right true set");
         newDirection = oldDirection == null ? math.Point(0, 1) :
@@ -228,15 +232,12 @@ state_right = false;
 }
 
 class GameState {
-  GameState(this.rows, this.columns) {
-    int snakeLength=5;
-
-  }
+  GameState();
 
   int step_count = 0;
-  int rows;
-  int columns;
-  int snakeLength=5;
+
+  // int columns;
+  static int snakeLength=5;
 
   math.Point food_pt = math.Point(0,0);
   math.Point head_pt = math.Point(0,0);
