@@ -90,14 +90,18 @@ Container(height:gss.height,
       ))),
       Container(height: gss.width*.06,),
 Container(height: gss.height * .1,child:
-  Center(child:Text("Input:",style: ui_but_ts,))
+  Center(child:Text("Control Setting:",style: ui_but_ts,))
   ,),
-Container(height: gss.width*.03,),
+Container(height: gss.width*.01,),
       Container(
+
          padding: EdgeInsets.symmetric(horizontal: gss.width*.13),
           child: DropdownButton<String>(
     value: dropdownValue,
-    icon: Icon(Icons.arrow_downward, color:Colors.deepPurpleAccent,),
+    isExpanded: true,
+    icon: Container(
+        padding: EdgeInsets.only(right: gss.width*.08),
+        child:Icon(Icons.arrow_downward, color:Colors.deepPurpleAccent,)),
     iconSize: 24,
     elevation: 16,
     style: TextStyle(color: Colors.white),
@@ -114,7 +118,10 @@ Container(height: gss.width*.03,),
         .map<DropdownMenuItem<String>>((String value) {
     return DropdownMenuItem<String>(
     value: value,
-    child: Text(value,style:ui_but_ts ,),
+    child: Container(
+      padding: EdgeInsets.symmetric(horizontal: gss.width *.08),
+      child:Row(children:[Center(
+      child:Text(value,style:ui_but_ts ,))]),)
     );
     }).toList(),
     )
@@ -197,6 +204,7 @@ bool right_press;
       WillPopScope(
           onWillPop: ()async{
             snake_game_timer.cancel();
+            GameState.reset_game();
             Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) =>
                     Snek_si_play()
@@ -206,7 +214,7 @@ bool right_press;
       Scaffold(
       appBar: AppBar(
 
-        title: const Center(child:Text('Snek_SI')),
+        // title: const Center(child:Text('Snek_SI')),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -223,7 +231,6 @@ bool right_press;
                   rows: _snakeRows,
                   columns: _snakeColumns,
                   cellSize: _snakeCellSize,
-                  snake_length: snake_length,
                   input_setting: widget.input_setting,
                   right_press: right_press,
                   left_press: left_press,
@@ -237,7 +244,9 @@ bool right_press;
           child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text("Score: ${GameState.snakeLength}")
+            Text("Score: ${GameState.snakeLength -5}",
+            style: ui_ts_a,
+            )
           ])),
           Container(height: gss.height*.06,),
           widget.input_setting == "Touch"?

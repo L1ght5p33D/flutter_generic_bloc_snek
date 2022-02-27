@@ -58,7 +58,7 @@ class SnakeBoardPainter extends CustomPainter {
     );
 
     /// Draw snek body from state.body
-    for (math.Point<int> p in state.body) {
+    for (math.Point<int> p in GameState.body) {
       final Offset a = Offset(cellSize * p.x, cellSize * p.y);
       final Offset b = Offset(cellSize * (p.x + 1), cellSize * (p.y + 1));
 
@@ -66,13 +66,13 @@ class SnakeBoardPainter extends CustomPainter {
     }
 
     /// Draw food if it needs
-    if(state.food_pt.x != 0 ) {
+    if(GameState.food_pt.x != 0 ) {
       final Offset a =
-      Offset(cellSize * state.food_pt.x,
-          cellSize * state.food_pt.y);
+      Offset(cellSize * GameState.food_pt.x,
+          cellSize * GameState.food_pt.y);
 
-      final Offset b = Offset(cellSize * (state.food_pt.x + 1),
-          cellSize * (state.food_pt.y + 1));
+      final Offset b = Offset(cellSize * (GameState.food_pt.x + 1),
+          cellSize * (GameState.food_pt.y + 1));
 
       canvas.drawRect(Rect.fromPoints(a, b), blackFilled);
     }
@@ -207,16 +207,18 @@ state_right = false;
     state.step(newDirection);
 
     print("state step");
-    print(state.head_pt.x.toString());
-    print(state.head_pt.y.toString());
+    print(GameState.head_pt.x.toString());
+    print(GameState.head_pt.y.toString());
     if (
     // state.head_pt.x < 0 ||
         // state.head_pt.y < 0 ||
-    state.head_pt.x == state.columns -1  ||
-    state.head_pt.y == state.rows-1
+    GameState.head_pt.x == state.columns -1  ||
+        GameState.head_pt.y == state.rows-1
 
     ){
       print("GAMEEEOVERRRR");
+
+      GameState.reset_game();
 
       snake_game_timer.cancel();
 
@@ -232,21 +234,39 @@ state_right = false;
 }
 
 class GameState {
-  GameState();
+  GameState(this.rows, this.columns) {
+    int snakeLength=5;
+  }
 
-  int step_count = 0;
-
-  // int columns;
+  static int step_count = 0;
+  int rows;
+  int columns;
   static int snakeLength=5;
 
-  math.Point food_pt = math.Point(0,0);
-  math.Point head_pt = math.Point(0,0);
+  static math.Point food_pt = math.Point(0,0);
+  static math.Point head_pt = math.Point(0,0);
 
-  List<math.Point<int>> body = <math.Point<int>>[const math.Point<int>(0, 0)];
+  static List<math.Point<int>> body = <math.Point<int>>[const math.Point<int>(0, 0)];
+  static math.Point<int> direction = const math.Point<int>(1, 0);
 
-  math.Point<int> direction = const math.Point<int>(1, 0);
+  static void reset_game(){
+    step_count = 0;
+    snakeLength = 5;
+    food_pt = math.Point(0,0);
+    head_pt = math.Point(0,0);
+   body = <math.Point<int>>[const math.Point<int>(0, 0)];
+    direction = const math.Point<int>(1, 0);
+  }
+
+  void reset_food(){
+    int food_pt_x = random.nextInt(columns);
+    int food_pt_y = random.nextInt(rows);
+    print("x: " + food_pt_x.toString() + " y: " + food_pt_y.toString());
+    food_pt = math.Point(food_pt_x, food_pt_y);
+  }
 
   void step(math.Point<int> newDirection) {
+
 
     math.Point<int> next = body.last + direction;
     next = math.Point<int>(next.x % columns, next.y % rows);
@@ -255,13 +275,9 @@ class GameState {
     if (body.length > snakeLength) body.removeAt(0);
     direction = newDirection ?? direction;
 
-    if (step_count % 71 == 0 ){
+    if (step_count % 251 == 0 ){
       print("food set:: ");
-
-      int food_pt_x = random.nextInt(columns);
-      int food_pt_y = random.nextInt(rows);
-      print("x: " + food_pt_x.toString() + " y: " + food_pt_y.toString());
-      food_pt = math.Point(food_pt_x, food_pt_y);
+      reset_food();
     }
 
     if (head_pt.x == food_pt.x &&
@@ -269,6 +285,7 @@ class GameState {
     ){
       print("GOT FOOD WINRAR");
       snakeLength +=1;
+      reset_food();
     }
     step_count += 1;
   }
