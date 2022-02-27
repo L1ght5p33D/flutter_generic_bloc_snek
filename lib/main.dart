@@ -54,6 +54,7 @@ Container(height:gss.height,
     style: snek_title_style,
     ),),
     ),
+
     Container(
       padding: EdgeInsets.symmetric(horizontal: gss.width*.12),
       width: gss.width,
@@ -166,8 +167,8 @@ class Snek_si_play extends StatefulWidget {
 }
 
 class _Snek_si_playState extends State<Snek_si_play> {
-  static const int _snakeRows = 40;
-  static const int _snakeColumns = 40;
+  static const int _snakeRows = 20;
+  static const int _snakeColumns = 20;
   static const double _snakeCellSize = 10.0;
 int snake_length;
 
@@ -181,9 +182,41 @@ int snake_length;
 bool left_press;
 bool right_press;
 
+  double align_exp_x = 0;
+  double align_exp_y = 0;
 
-  @override
+  reset_press(){
+    setState(() {
+      left_press = false;
+      right_press = false;
+    });
+  }
+
+
   Widget build(BuildContext context) {
+
+
+print("Game state exp pt :: ");
+print(GameState.exp_pt.x.toString());
+print(GameState.exp_pt.y.toString());
+
+    if (GameState.exp_pt.x < _snakeColumns/2){
+      align_exp_x = (GameState.exp_pt.x.toDouble() / (_snakeColumns/2))
+          * -1;
+    }
+    else{
+      align_exp_x = (GameState.exp_pt.x.toDouble() - (_snakeColumns/2))/
+          (_snakeColumns/2) * 1;
+    }
+
+    if (GameState.exp_pt.y < _snakeRows/2){
+      align_exp_y = (GameState.exp_pt.y.toDouble() /
+          (_snakeColumns/2)) * -1;
+    }
+    else{
+      align_exp_y = ((GameState.exp_pt.y.toDouble() - (_snakeColumns/2))
+          / (_snakeColumns/2)) * 1;
+    }
 
     final List<String> accelerometer =
     _accelerometerValues?.map((double v) => v.toStringAsFixed(1))?.toList();
@@ -227,15 +260,40 @@ bool right_press;
               child: SizedBox(
                 height: _snakeRows * _snakeCellSize,
                 width: _snakeColumns * _snakeCellSize,
-                child: Snake(
+                child: Stack(children:[
+                  GameState.show_food_exp?
+                 Container(
+                   key: UniqueKey(),
+                    width: gss.width,
+                    height: gss.height,
+                    child:  Container(
+                        // width: gss.width *.4,
+                        // height: gss.width * .4,
+                        child:Align(
+                        alignment: Alignment(
+                        align_exp_x,
+                          align_exp_y
+                        ),
+                            // GameState.exp_pt.x.toDouble() / 2,
+                            // GameState.exp_pt.y.toDouble()),
+                        child: Container(
+                          width: gss.width *.033,
+                          height: gss.width * .033,
+                          child:
+                      Image.asset(
+                        "assets/frag_exp_.gif",
+                      fit: BoxFit.contain,
+                      )))),
+                  ):Container(),
+                  Snake(
                   rows: _snakeRows,
                   columns: _snakeColumns,
                   cellSize: _snakeCellSize,
                   input_setting: widget.input_setting,
                   right_press: right_press,
                   left_press: left_press,
-                  reset_press: reset_press
-                ),
+                  reset_press: reset_press,
+                )]),
               ),
             ),
           ),

@@ -17,6 +17,7 @@ class Snake extends StatefulWidget {
   this.input_setting,
   this.left_press,
   this.right_press,
+    this.show_food_exp,
   this.reset_press}) {
     assert(10 <= rows);
     assert(10 <= columns);
@@ -30,14 +31,16 @@ class Snake extends StatefulWidget {
   final String input_setting;
   bool left_press;
   bool right_press;
+  bool show_food_exp;
   Function reset_press;
 
-  @override
+
   State<StatefulWidget> createState() => SnakeState(
       rows, columns, cellSize, input_setting,
   left_press,
     right_press,
-    reset_press
+    show_food_exp,
+    reset_press,
   );
 }
 
@@ -92,6 +95,7 @@ class SnakeState extends State<Snake> {
       this.input_setting,
       this.left_press,
       this.right_press,
+      this.show_food_exp,
       this.reset_press
       ) {
     state = GameState(rows, columns);
@@ -100,6 +104,7 @@ class SnakeState extends State<Snake> {
   String input_setting;
 bool left_press;
 bool right_press;
+bool show_food_exp;
 Function reset_press;
 
 bool state_left;
@@ -239,12 +244,19 @@ class GameState {
   }
 
   static int step_count = 0;
+
+
+  int show_food_exp_step=0;
+
   int rows;
   int columns;
   static int snakeLength=5;
 
+  static bool show_food_exp = false;
+
   static math.Point food_pt = math.Point(0,0);
   static math.Point head_pt = math.Point(0,0);
+  static math.Point exp_pt = math.Point(0,0);
 
   static List<math.Point<int>> body = <math.Point<int>>[const math.Point<int>(0, 0)];
   static math.Point<int> direction = const math.Point<int>(1, 0);
@@ -267,6 +279,14 @@ class GameState {
 
   void step(math.Point<int> newDirection) {
 
+    print("step head pos ::: " + head_pt.x.toString() + ", " + head_pt.y.toString());
+print("step food pos ::: " + food_pt.x.toString() + ", " + food_pt.y.toString());
+print("step exp pos ::: " + exp_pt.x.toString() + ", " + exp_pt.y.toString());
+
+    /// wait ten steps after showing explosion to turn off
+    if (step_count - show_food_exp_step == 10){
+      show_food_exp = false;
+    }
 
     math.Point<int> next = body.last + direction;
     next = math.Point<int>(next.x % columns, next.y % rows);
@@ -283,6 +303,14 @@ class GameState {
     if (head_pt.x == food_pt.x &&
           head_pt.y == food_pt.y
     ){
+
+      show_food_exp = true;
+
+      exp_pt = head_pt;
+      show_food_exp_step = step_count;
+
+      // set_exp_state(exp_pt.x-1,exp_pt.y-1);
+
       print("GOT FOOD WINRAR");
       snakeLength +=1;
       reset_food();
