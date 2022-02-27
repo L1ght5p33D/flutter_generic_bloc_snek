@@ -6,27 +6,32 @@ import 'package:sensors/sensors.dart';
 import 'main.dart';
 
 Timer snake_game_timer;
+StreamSubscription<AccelerometerEvent> _streamSubscription;
+
 
 math.Random random = math.Random();
-
+const int rows = 30;
+const int columns = 30;
+const double cellSize = 10.0;
 class Snake extends StatefulWidget {
-  Snake({this.rows = 40,
-    this.columns = 40,
-    this.cellSize = 10.0,
+  Snake({
+    // this.rows = 40,
+    // this.columns = 40,
+    // this.cellSize = 10.0,
     this.snake_length,
-  this.input_setting,
-  this.left_press,
-  this.right_press,
+    this.input_setting,
+    this.left_press,
+    this.right_press,
     this.show_food_exp,
-  this.reset_press}) {
+    this.reset_press}) {
     assert(10 <= rows);
     assert(10 <= columns);
     assert(5.0 <= cellSize);
   }
 
-  final int rows;
-  final int columns;
-  final double cellSize;
+  // final int rows;
+  // final int columns;
+  // final double cellSize;
   final int snake_length;
   final String input_setting;
   bool left_press;
@@ -36,8 +41,9 @@ class Snake extends StatefulWidget {
 
 
   State<StatefulWidget> createState() => SnakeState(
-      rows, columns, cellSize, input_setting,
-  left_press,
+    rows, columns, cellSize,
+    input_setting,
+    left_press,
     right_press,
     show_food_exp,
     reset_press,
@@ -98,23 +104,23 @@ class SnakeState extends State<Snake> {
       this.show_food_exp,
       this.reset_press
       ) {
-    state = GameState(rows, columns);
+    state = GameState();
   }
 
   String input_setting;
-bool left_press;
-bool right_press;
-bool show_food_exp;
-Function reset_press;
+  bool left_press;
+  bool right_press;
+  bool show_food_exp;
+  Function reset_press;
 
-bool state_left;
-bool state_right;
+  bool state_left;
+  bool state_right;
 
 
   double cellSize;
   GameState state;
   AccelerometerEvent acceleration;
-  StreamSubscription<AccelerometerEvent> _streamSubscription;
+  // StreamSubscription<AccelerometerEvent> _streamSubscription;
 
 
   @override
@@ -139,7 +145,7 @@ bool state_right;
           });
         });
 
-    snake_game_timer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+    snake_game_timer = Timer.periodic(const Duration(milliseconds: 234), (_) {
       setState(() {
         _step();
       });
@@ -151,7 +157,7 @@ bool state_right;
   }
 
 
-math.Point oldDirection;
+  math.Point oldDirection;
   math.Point<int> newDirection;
 
   void _step() {
@@ -176,8 +182,8 @@ math.Point oldDirection;
           : math.Point<int>(-acceleration.x.sign.toInt(), 0);
     }
 
-///#################################3
-  if (input_setting == "Touch"){
+    ///#################################3
+    if (input_setting == "Touch"){
       if (state_left == true) {
         print("state right true set");
         newDirection = oldDirection == null ? math.Point(0, 1) :
@@ -201,7 +207,7 @@ math.Point oldDirection;
       }
     }
 
-state_right = false;
+    state_right = false;
     state_left = false;
     widget.right_press = false;
     widget.left_press = false;
@@ -216,16 +222,17 @@ state_right = false;
     print(GameState.head_pt.y.toString());
     if (
     // state.head_pt.x < 0 ||
-        // state.head_pt.y < 0 ||
-    GameState.head_pt.x == state.columns -1  ||
-        GameState.head_pt.y == state.rows-1
+    // state.head_pt.y < 0 ||
+    GameState.head_pt.x == columns -1  ||
+        GameState.head_pt.y == rows-1
 
     ){
       print("GAMEEEOVERRRR");
-
+      snake_game_timer.cancel();
+      _streamSubscription.cancel();
       GameState.reset_game();
 
-      snake_game_timer.cancel();
+
 
       Navigator.push(
           context,
@@ -239,17 +246,16 @@ state_right = false;
 }
 
 class GameState {
-  GameState(this.rows, this.columns) {
+  GameState() {
     int snakeLength=5;
   }
 
   static int step_count = 0;
 
-
   int show_food_exp_step=0;
 
-  int rows;
-  int columns;
+  // int rows;
+  // int columns;
   static int snakeLength=5;
 
   static bool show_food_exp = false;
@@ -266,8 +272,10 @@ class GameState {
     snakeLength = 5;
     food_pt = math.Point(0,0);
     head_pt = math.Point(0,0);
-   body = <math.Point<int>>[const math.Point<int>(0, 0)];
+    body = <math.Point<int>>[const math.Point<int>(0, 0)];
     direction = const math.Point<int>(1, 0);
+    snake_game_timer.cancel();
+    _streamSubscription.cancel();
   }
 
   void reset_food(){
@@ -280,17 +288,17 @@ class GameState {
   void step(math.Point<int> newDirection) {
 
     print("step head pos ::: " + head_pt.x.toString() + ", " + head_pt.y.toString());
-print("step food pos ::: " + food_pt.x.toString() + ", " + food_pt.y.toString());
-print("step exp pos ::: " + exp_pt.x.toString() + ", " + exp_pt.y.toString());
+    print("step food pos ::: " + food_pt.x.toString() + ", " + food_pt.y.toString());
+    print("step exp pos ::: " + exp_pt.x.toString() + ", " + exp_pt.y.toString());
 
     /// wait ten steps after showing explosion to turn off
-    if (step_count - show_food_exp_step == 10){
+    if (step_count - show_food_exp_step > 15){
       show_food_exp = false;
     }
 
     math.Point<int> next = body.last + direction;
     next = math.Point<int>(next.x % columns, next.y % rows);
-      head_pt = math.Point(next.x,next.y);
+    head_pt = math.Point(next.x,next.y);
     body.add(next);
     if (body.length > snakeLength) body.removeAt(0);
     direction = newDirection ?? direction;
@@ -301,15 +309,12 @@ print("step exp pos ::: " + exp_pt.x.toString() + ", " + exp_pt.y.toString());
     }
 
     if (head_pt.x == food_pt.x &&
-          head_pt.y == food_pt.y
+        head_pt.y == food_pt.y
     ){
 
       show_food_exp = true;
-
       exp_pt = head_pt;
       show_food_exp_step = step_count;
-
-      // set_exp_state(exp_pt.x-1,exp_pt.y-1);
 
       print("GOT FOOD WINRAR");
       snakeLength +=1;
