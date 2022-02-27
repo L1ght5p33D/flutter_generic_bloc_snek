@@ -232,14 +232,19 @@ class SnakeState extends State<Snake> {
       _streamSubscription.cancel();
       GameState.reset_game();
 
-
-
       Navigator.push(
           context,
           MaterialPageRoute(builder: (context) =>
-              SnakeStart()
+              SnekScore(GameState.score())
           )
       );
+
+      // Navigator.push(
+      //     context,
+      //     MaterialPageRoute(builder: (context) =>
+      //         SnakeStart()
+      //     )
+      // );
 
     }
   }
@@ -249,9 +254,11 @@ class GameState {
   GameState() {
     int snakeLength=5;
   }
-
+static int score(){
+    return (step_count + foods_captured * 100);
+}
   static int step_count = 0;
-
+static int foods_captured=0;
   int show_food_exp_step=0;
 
   // int rows;
@@ -313,6 +320,7 @@ class GameState {
     ){
 
       show_food_exp = true;
+      foods_captured +=1;
       exp_pt = head_pt;
       show_food_exp_step = step_count;
 
@@ -321,5 +329,23 @@ class GameState {
       reset_food();
     }
     step_count += 1;
+  }
+}
+
+class SnekScore extends StatefulWidget {
+  SnekScore(this.final_score);
+  int final_score;
+  _SnekScoreState createState() => _SnekScoreState();
+}
+
+class _SnekScoreState extends State<SnekScore> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(body: Center(child:
+      Column(children: <Widget>[
+        Text("Game Over", style: ui_but_ts,),
+        Text("Final Score: " + widget.final_score.toString()),
+        
+      ],),),);
   }
 }

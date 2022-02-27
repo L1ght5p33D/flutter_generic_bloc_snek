@@ -260,28 +260,29 @@ class _Snek_si_playState extends State<Snek_si_play> {
                       height: _snakeRows * _snakeCellSize,
                       width: _snakeColumns * _snakeCellSize,
                       child: Stack(children:[
-                        Container(
-                          width: gss.width,
-                          height: gss.height,
-                          child:  Container(
-                            // width: gss.width *.4,
-                            // height: gss.width * .4,
-                              child:Align(
-                                  alignment: Alignment(
-                                     .2,
-                                      .6
-                                  ),
-                                  // GameState.exp_pt.x.toDouble() / 2,
-                                  // GameState.exp_pt.y.toDouble()),
-                                  child: Container(
-                                      width: gss.width *.033,
-                                      height: gss.width * .033,
-                                      child:
-                                      Image.asset(
-                                        "assets/frag_exp_.gif",
-                                        fit: BoxFit.contain,
-                                      )))),
-                        ),
+                        /// control pos explosion
+                        // Container(
+                        //   width: gss.width,
+                        //   height: gss.height,
+                        //   child:  Container(
+                        //     // width: gss.width *.4,
+                        //     // height: gss.width * .4,
+                        //       child:Align(
+                        //           alignment: Alignment(
+                        //              .2,
+                        //               .6
+                        //           ),
+                        //           // GameState.exp_pt.x.toDouble() / 2,
+                        //           // GameState.exp_pt.y.toDouble()),
+                        //           child: Container(
+                        //               width: gss.width *.033,
+                        //               height: gss.width * .033,
+                        //               child:
+                        //               Image.asset(
+                        //                 "assets/frag_exp_.gif",
+                        //                 fit: BoxFit.contain,
+                        //               )))),
+                        // ),
                         GameState.show_food_exp?
                         Container(
                           width: gss.width,
@@ -301,7 +302,7 @@ class _Snek_si_playState extends State<Snek_si_play> {
                                       height: gss.width * .033,
                                       child:
                                       Image.asset(
-                                        "assets/frag_exp_.gif",
+                                        "assets/veil_sn_exp.gif",
                                         fit: BoxFit.contain,
                                       )))),
                         ):Container(),
