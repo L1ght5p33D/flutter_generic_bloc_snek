@@ -145,7 +145,7 @@ class SnakeState extends State<Snake> {
           });
         });
 
-    snake_game_timer = Timer.periodic(const Duration(milliseconds: 234), (_) {
+    snake_game_timer = Timer.periodic( Duration(milliseconds: 234), (_) {
       setState(() {
         _step();
       });
@@ -155,6 +155,8 @@ class SnakeState extends State<Snake> {
     state_right = false;
 
   }
+
+
 
 
   math.Point oldDirection;
@@ -228,8 +230,6 @@ class SnakeState extends State<Snake> {
 
     ){
       print("GAMEEEOVERRRR");
-      snake_game_timer.cancel();
-      _streamSubscription.cancel();
       GameState.reset_game();
 
       Navigator.push(
@@ -238,15 +238,19 @@ class SnakeState extends State<Snake> {
               SnekScore(GameState.score())
           )
       );
-
-      // Navigator.push(
-      //     context,
-      //     MaterialPageRoute(builder: (context) =>
-      //         SnakeStart()
-      //     )
-      // );
-
     }
+    if (GameState.head_pt.x == GameState.food_pt.x &&
+        GameState.head_pt.y == GameState.food_pt.y
+    ){
+      print("Food winrar from step");
+      snake_game_timer.cancel();
+      snake_game_timer = Timer.periodic( Duration(milliseconds: 234 - (GameState.foods_captured * 100)), (_) {
+        setState(() {
+          _step();
+        });
+      });
+    }
+
   }
 }
 
@@ -343,9 +347,38 @@ class _SnekScoreState extends State<SnekScore> {
   Widget build(BuildContext context) {
     return Scaffold(body: Center(child:
       Column(children: <Widget>[
-        Text("Game Over", style: ui_but_ts,),
-        Text("Final Score: " + widget.final_score.toString()),
-        
+        Container(height: gss.height*.1,),
+        Text("Game Over", style: snek_title_style),
+        Container(height: gss.height*.1,),
+        Text("Final Score: " + widget.final_score.toString(),style: ui_but_ts,),
+        Container(height: gss.height*.06,),
+        GestureDetector(
+            onTap: (){
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>
+                      SnakeStart()
+                  )
+              );
+            },
+            child:
+            ClipRRect(
+                borderRadius: BorderRadius.circular(gss.width*.08),
+                child:
+                Container(
+                    color: Colors.white,
+                    width: gss.width*.67,
+                    height: gss.width * .20,
+                    padding: EdgeInsets.all(gss.width*.02),
+                    child:
+                    ClipRRect(
+                        borderRadius: BorderRadius.circular(gss.width*.08),
+                        child:
+                        Container(
+                          width: gss.width*.64,
+                          color: Colors.blueGrey[900],
+                          child:Center(child:Text("Play Again",style: ui_but_ts,)),))))),
+
       ],),),);
   }
 }
