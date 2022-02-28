@@ -125,6 +125,28 @@ class SnakeState extends State<Snake> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (GameState.set_timer == true){
+      print("set fucking timer");
+      snake_game_timer = Timer.periodic( Duration(milliseconds: 100), (_) {
+        setState(() {
+          _step();
+        });
+      });
+      GameState.set_timer = false;
+    }
+
+    if (snake_game_timer == null
+    && GameState.game_over == false
+    ){
+      print("init fucking timer");
+      snake_game_timer = Timer.periodic( Duration(milliseconds: 234), (_) {
+        setState(() {
+          _step();
+        });
+      });
+    }
+
     return CustomPaint(painter: SnakeBoardPainter(state, cellSize));
   }
 
@@ -135,7 +157,7 @@ class SnakeState extends State<Snake> {
     snake_game_timer.cancel();
   }
 
-  @override
+
   void initState() {
     super.initState();
     _streamSubscription =
@@ -145,11 +167,7 @@ class SnakeState extends State<Snake> {
           });
         });
 
-    snake_game_timer = Timer.periodic( Duration(milliseconds: 234), (_) {
-      setState(() {
-        _step();
-      });
-    });
+
 
     state_left = false;
     state_right = false;
@@ -217,39 +235,49 @@ class SnakeState extends State<Snake> {
 
     oldDirection = newDirection;
 
-    state.step(newDirection);
+    // if (GameState.head_pt.x == GameState.food_pt.x &&
+    //     GameState.head_pt.y == GameState.food_pt.y
+    // ){
+    //   print("Food winrar from step");
+    // GameState.set_timer = true;
+    //     snake_game_timer.cancel();
+    //     // snake_game_timer = Timer.periodic( Duration(milliseconds: 100), (_) {
+    //     //   setState(() {
+    //     //     _step();
+    //     //   });
+    //     // });
+    //
+    //
+    // }
 
-    print("state step");
-    print(GameState.head_pt.x.toString());
-    print(GameState.head_pt.y.toString());
+    state_stepper(){
+      setState(() {
+        _step();
+      });
+    }
+
+    GameState.step(newDirection, state_stepper);
+
     if (
     // state.head_pt.x < 0 ||
     // state.head_pt.y < 0 ||
     GameState.head_pt.x == columns -1  ||
         GameState.head_pt.y == rows-1
-
     ){
       print("GAMEEEOVERRRR");
+      GameState.game_over = true;
+
+      var snek_score_final = GameState.score();
       GameState.reset_game();
 
       Navigator.push(
           context,
           MaterialPageRoute(builder: (context) =>
-              SnekScore(GameState.score())
+              SnekScore(snek_score_final)
           )
       );
     }
-    if (GameState.head_pt.x == GameState.food_pt.x &&
-        GameState.head_pt.y == GameState.food_pt.y
-    ){
-      print("Food winrar from step");
-      snake_game_timer.cancel();
-      snake_game_timer = Timer.periodic( Duration(milliseconds: 234 - (GameState.foods_captured * 100)), (_) {
-        setState(() {
-          _step();
-        });
-      });
-    }
+
 
   }
 }
@@ -261,15 +289,17 @@ class GameState {
 static int score(){
     return (step_count + foods_captured * 100);
 }
+static bool game_over = false;
   static int step_count = 0;
-static int foods_captured=0;
-  int show_food_exp_step=0;
+  static int foods_captured=0;
+  static int show_food_exp_step=0;
 
   // int rows;
   // int columns;
   static int snakeLength=5;
 
   static bool show_food_exp = false;
+  static bool set_timer = false;
 
   static math.Point food_pt = math.Point(0,0);
   static math.Point head_pt = math.Point(0,0);
@@ -281,22 +311,26 @@ static int foods_captured=0;
   static void reset_game(){
     step_count = 0;
     snakeLength = 5;
+    foods_captured = 0;
+    show_food_exp = false;
+    set_timer = false;
     food_pt = math.Point(0,0);
     head_pt = math.Point(0,0);
     body = <math.Point<int>>[const math.Point<int>(0, 0)];
     direction = const math.Point<int>(1, 0);
     snake_game_timer.cancel();
+    snake_game_timer = null;
     _streamSubscription.cancel();
   }
 
-  void reset_food(){
+  static void reset_food(){
     int food_pt_x = random.nextInt(columns);
     int food_pt_y = random.nextInt(rows);
     print("x: " + food_pt_x.toString() + " y: " + food_pt_y.toString());
     food_pt = math.Point(food_pt_x, food_pt_y);
   }
 
-  void step(math.Point<int> newDirection) {
+  static void step(math.Point<int> newDirection, Function state_stepper) {
 
     print("step head pos ::: " + head_pt.x.toString() + ", " + head_pt.y.toString());
     print("step food pos ::: " + food_pt.x.toString() + ", " + food_pt.y.toString());
@@ -314,7 +348,7 @@ static int foods_captured=0;
     if (body.length > snakeLength) body.removeAt(0);
     direction = newDirection ?? direction;
 
-    if (step_count % 251 == 0 ){
+    if (step_count % 79 == 0 ){
       print("food set:: ");
       reset_food();
     }
@@ -328,9 +362,16 @@ static int foods_captured=0;
       exp_pt = head_pt;
       show_food_exp_step = step_count;
 
-      print("GOT FOOD WINRAR");
+      print("GOT FOOD");
       snakeLength +=1;
       reset_food();
+
+      snake_game_timer.cancel();
+      snake_game_timer = Timer.periodic( Duration(milliseconds: 240 - (40 * foods_captured)), (_) {
+          state_stepper();
+      });
+
+
     }
     step_count += 1;
   }

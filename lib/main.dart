@@ -59,6 +59,7 @@ class _SnakeStartState extends State<SnakeStart> {
 
               child:
               GestureDetector(onTap: (){
+                GameState.game_over = false;
                 Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) =>
@@ -156,10 +157,10 @@ class MyApp extends StatelessWidget {
 }
 
 class Snek_si_play extends StatefulWidget {
-  Snek_si_play({Key key, this.input_setting, this.game_score}) : super(key: key);
+  Snek_si_play({Key key, this.input_setting}) : super(key: key);
 
   String input_setting;
-  int game_score;
+
 
   _Snek_si_playState createState() => _Snek_si_playState();
 }
@@ -185,16 +186,9 @@ class _Snek_si_playState extends State<Snek_si_play> {
 
   @override
   Widget build(BuildContext context) {
-
-
     print(" exp pt :: x: " + GameState.exp_pt.x.toString() + ", y: " + GameState.exp_pt.y.toString());
-    print("head point ::: x: " + GameState.head_pt.x.toString() + ", y: " + GameState.head_pt.y.toString());
+    print("head point :: x: " + GameState.head_pt.x.toString() + ", y: " + GameState.head_pt.y.toString());
 
-    ///Test food winrar ::
-/// > .5x && > .5y   first quad flipped x
-    /// second quad flipped y
-    ///    third quad
-    ///    > .5x && < .5y  fourth flipped both
     if (GameState.exp_pt.x > columns/2) {
       align_exp_x =
            -((columns - GameState.exp_pt.x) - (columns / 2)) / (columns / 2);
@@ -235,7 +229,6 @@ class _Snek_si_playState extends State<Snek_si_play> {
     return
       WillPopScope(
           onWillPop: ()async{
-            snake_game_timer.cancel();
             GameState.reset_game();
             Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) =>
@@ -347,7 +340,7 @@ class _Snek_si_playState extends State<Snek_si_play> {
                               borderRadius: BorderRadius.circular(gss.width*.08),
                               child:
                               Container(
-                                  color: Colors.white,
+                                  color: Colors.deepPurple,
                                   width: gss.width*.26,
                                   height: gss.width * .20,
                                   padding: EdgeInsets.all(gss.width*.02),
@@ -372,7 +365,7 @@ class _Snek_si_playState extends State<Snek_si_play> {
                               borderRadius: BorderRadius.circular(gss.width*.08),
                               child:
                               Container(
-                                  color: Colors.white,
+                                  color: Colors.deepPurple,
                                   width: gss.width*.26,
                                   height: gss.width * .20,
                                   padding: EdgeInsets.all(gss.width*.02),
