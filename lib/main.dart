@@ -6,12 +6,15 @@ import 'package:flutter/widgets.dart';
 import 'snake.dart';
 import 'options.dart';
 import 'snakeStartBloc.dart';
-import 'siBlocBase.dart';
+import 'snekStateBase.dart';
 import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
+import 'package:image/image.dart' as image;
+import 'package:flutter/services.dart';
 
-// init gss to something
-var gss = Size(555, 555);
+// init ss_bloc_inst.sscreen_size to something
+// var ss_bloc_inst.sscreen_size = Size(555, 555);
 
 // basically snake game rows * grid height, but used
 // for height of explosion align which unfortunately is separate
@@ -19,7 +22,7 @@ var snake_game_height = 300.0;
 
 // just init these and set later
 double gamescreen_height = 1000.0;
-double gamescreen_width = 890.0;
+// double gamescreen_width = 890.0;
 double touch_control_row_width = 990.0;
 double gamespacer_left = 200.0;
 double gameboard_width = 444.0;
@@ -27,24 +30,38 @@ double touch_button_width = 120.0;
 
 String input_setting = "Touch";
 
-TextStyle ui_but_ts = TextStyle(fontSize: 30);
-TextStyle ui_ts_a =
-    TextStyle(fontSize: gss.width * .033, fontFamily: 'MontserratSubrayada');
-TextStyle snek_title_style = TextStyle(
-    fontSize: gss.height * .05,
-    fontWeight: FontWeight.w700,
-    fontFamily: 'MontserratSubrayada');
+
 
 final touch_controller = StreamController<String>();
 final step_state_controller = StreamController<bool>();
+
+
+class CustomError extends StatelessWidget {
+  const CustomError({Key key, this.errorDetails}) : super(key: key);
+
+  final FlutterErrorDetails errorDetails;
+  @override
+  Widget build(BuildContext context) {
+    return
+      ListView(children:[
+      Container(
+      color: Colors.tealAccent,
+      child:Center(child:Text(
+          errorDetails.toString(),
+          style:TextStyle(color:Colors.black)
+      ))
+    )]);
+  }
+}
+
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  static SnakeStartBloc g_ss_b = SnakeStartBloc();
 
+  SnakeStartBloc ss_bloc_inst;
   Widget build(BuildContext context) {
     // SystemChrome.setPreferredOrientations([
     //   DeviceOrientation.
@@ -52,10 +69,24 @@ class MyApp extends StatelessWidget {
     //   // DeviceOrientation.portraitUp,
     //   // DeviceOrientation.portraitDown,
     // ]);
+    // ss_bloc_inst = snekStateProvider.of(context);
+      ss_bloc_inst = SnakeStartBloc();
     return MaterialApp(
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(brightness: Brightness.dark),
-        home: SnakeStart());
+        theme: ThemeData(brightness: Brightness.dark,
+                          errorColor: Colors.tealAccent,
+        ),
+    builder: (BuildContext context, Widget widget) {
+      ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+        return CustomError(errorDetails: errorDetails);
+      };
+      return widget;
+      },
+        home:  snekStateProvider<SnakeStartBloc>(
+            bloc: ss_bloc_inst,
+            child:
+            SnakeStart()));
+
   }
 }
 
@@ -67,52 +98,78 @@ class SnakeStart extends StatefulWidget {
 }
 
 class _SnakeStartState extends State<SnakeStart> {
+  SnakeStartBloc ss_bloc_inst;
+
+  TextStyle ui_but_ts = TextStyle(fontSize: 30);
+  TextStyle ui_ts_a;
+  TextStyle snek_title_style;
+
+  @override
+  void initState() {
+    Future.delayed(Duration.zero,()
+    {
+       ss_bloc_inst = snekStateProvider.of(context);
+       setState(() {
+         ss_bloc_inst.sscreen_size = MediaQuery.of(context).size;
+       });
+
+
+       ui_ts_a =
+           TextStyle(fontSize: ss_bloc_inst.sscreen_size.width * .033,
+               fontFamily: 'MontserratSubrayada');
+
+       snek_title_style = TextStyle(
+           fontSize: ss_bloc_inst.sscreen_size.height * .05,
+           fontWeight: FontWeight.w700,
+           fontFamily: 'MontserratSubrayada');
+
+       if (ss_bloc_inst.update_stream_has_listen == false) {
+         ss_bloc_inst.update_stream_has_listen = true;
+         print("build stream creating snake state global bloc listener ... ");
+         Stream get_b_up_stream = ss_bloc_inst.update_stream;
+         get_b_up_stream = ss_bloc_inst.broadcast_update_stream();
+         get_b_up_stream.listen((event) {
+           // print("braodcast up stream event");
+           // print("bup stream event ~ " + event.toString());
+           // print("bup get press val ~ " + event["touchinput"]);
+           setState(() {
+             ss_bloc_inst.sub_val = event["touchinput"];
+           });
+         });
+
+         // print("Set get up b listener success, ss_bloc_inst state vals ~~ ");
+       }
+       // print("ss bloc input setting ~ "+ ss_bloc_inst.input_setting.toString());
+
+       // if (ss_bloc_inst.snake_game_timer != null) {
+       //   ss_bloc_inst.snake_game_timer.cancel();
+       // }
+
+
+      super.initState();
+    });
+  }
+
   Widget build(BuildContext context) {
     print("SnakeStart build called, get snakestart bloc inst STATE");
 
-// Init new Bloc here
-    SnakeStartBloc ss_bloc_inst = SnakeStartBloc();
-
-    ss_bloc_inst.sscreen_size = MediaQuery.of(context).size;
-
-    if (ss_bloc_inst.update_stream_has_listen == false) {
-      ss_bloc_inst.update_stream_has_listen = true;
-      print("build stream creating snake state global bloc listener ... ");
-      Stream get_b_up_stream = ss_bloc_inst.update_stream;
-      get_b_up_stream = ss_bloc_inst.broadcast_update_stream();
-      get_b_up_stream.listen((event) {
-        // print("braodcast up stream event");
-        // print("bup stream event ~ " + event.toString());
-        // print("bup get press val ~ " + event["touchinput"]);
-        setState(() {
-          ss_bloc_inst.sub_val = event["touchinput"];
-        });
-      });
-
-      // print("Set get up b listener success, ss_bloc_inst state vals ~~ ");
-    }
-    // print("ss bloc input setting ~ "+ ss_bloc_inst.input_setting.toString());
-    gss = MediaQuery.of(context).size;
-    // print("GSS width ~ " + gss.width.toString());
-
-    if (ss_bloc_inst.snake_game_timer != null) {
-      ss_bloc_inst.snake_game_timer.cancel();
-    }
+    ss_bloc_inst == null ?? Container();
+     ss_bloc_inst.sscreen_size == null ?? Container();
 
     return Scaffold(
         body: Container(
-            width: gss.width,
+            width: ss_bloc_inst.sscreen_size.width,
             child: ListView(children: [
               Center(
                 child: Text(
-                  "Snek_303",
+                  "Flutter Snek",
                   style: snek_title_style,
                 ),
                 // ),
               ),
               Container(
-                  padding: EdgeInsets.symmetric(horizontal: gss.width * .12),
-                  height: gss.height * .3,
+                  padding: EdgeInsets.symmetric(horizontal: ss_bloc_inst.sscreen_size.width * .12),
+                  height: ss_bloc_inst.sscreen_size.height * .14,
                   child: GestureDetector(
                       onTap: () {
                         print("log start game vars input setting ::: " +
@@ -124,28 +181,28 @@ class _SnakeStartState extends State<SnakeStart> {
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                                  siBlocProvider<SnakeStartBloc>(
+                                  snekStateProvider<SnakeStartBloc>(
                                       bloc: ss_bloc_inst,
                                       child: Snek_si_play())),
                         );
                       },
                       child: Container(
-                          width: gss.width * .6,
-                          height: gss.height * .3,
+                          width: ss_bloc_inst.sscreen_size.width * .6,
+                          height: ss_bloc_inst.sscreen_size.height * .14,
                           child: ClipRRect(
                               borderRadius:
-                                  BorderRadius.circular(gss.width * .08),
+                                  BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .08),
                               child: Container(
                                   color: ss_bloc_inst.g_theme_color,
-                                  width: gss.width * .5,
-                                  height: gss.width * .14,
-                                  padding: EdgeInsets.all(gss.width * .01),
+                                  width: ss_bloc_inst.sscreen_size.width * .5,
+                                  height: ss_bloc_inst.sscreen_size.width * .14,
+                                  padding: EdgeInsets.all(ss_bloc_inst.sscreen_size.width * .01),
                                   child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
-                                          gss.width * .08),
+                                          ss_bloc_inst.sscreen_size.width * .08),
                                       child: Container(
                                         padding: EdgeInsets.all(0.0),
-                                        width: gss.width * .4,
+                                        width: ss_bloc_inst.sscreen_size.width * .4,
                                         color: Colors.blueGrey[900],
                                         child: Center(
                                           child: Text(
@@ -155,39 +212,39 @@ class _SnakeStartState extends State<SnakeStart> {
                                         ),
                                       ))))))),
               Container(
-                height: gss.width * .06,
+                height: ss_bloc_inst.sscreen_size.width * .06,
               ),
               Container(
-                  padding: EdgeInsets.symmetric(horizontal: gss.width * .12),
-                  width: gss.width,
-                  height: gss.height * .3,
+                  padding: EdgeInsets.symmetric(horizontal: ss_bloc_inst.sscreen_size.width * .12),
+                  width: ss_bloc_inst.sscreen_size.width,
+                  height: ss_bloc_inst.sscreen_size.height * .14,
                   child: GestureDetector(
                       onTap: () {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
-                                    siBlocProvider<SnakeStartBloc>(
+                                    snekStateProvider<SnakeStartBloc>(
                                         bloc: ss_bloc_inst,
                                         child: Snek_Options())));
                       },
                       child: Container(
-                          width: gss.width * .6,
-                          height: gss.height * .5,
+                          width: ss_bloc_inst.sscreen_size.width * .6,
+                          height: ss_bloc_inst.sscreen_size.height * .5,
                           child: ClipRRect(
                               borderRadius:
-                                  BorderRadius.circular(gss.width * .08),
+                                  BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .08),
                               child: Container(
                                   color: ss_bloc_inst.g_theme_color,
-                                  width: gss.width * .5,
-                                  height: gss.width * .14,
-                                  padding: EdgeInsets.all(gss.width * .01),
+                                  width: ss_bloc_inst.sscreen_size.width * .5,
+                                  height: ss_bloc_inst.sscreen_size.width * .14,
+                                  padding: EdgeInsets.all(ss_bloc_inst.sscreen_size.width * .01),
                                   child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
-                                          gss.width * .08),
+                                          ss_bloc_inst.sscreen_size.width * .08),
                                       child: Container(
                                         padding: EdgeInsets.all(0.0),
-                                        width: gss.width * .4,
+                                        width: ss_bloc_inst.sscreen_size.width * .4,
                                         color: Colors.blueGrey[900],
                                         child: Center(
                                           child: Text(
@@ -197,13 +254,13 @@ class _SnakeStartState extends State<SnakeStart> {
                                         ),
                                       ))))))),
               Container(
-                  height: gss.height * .3,
+                  height: ss_bloc_inst.sscreen_size.height * .3,
                   child: Column(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Container(
-                          height: gss.height * .28,
+                          height: ss_bloc_inst.sscreen_size.height * .28,
                           child: Center(
                             child: Text(
                               "Sigma Infinitus",
@@ -235,36 +292,38 @@ class _Snek_si_playState extends State<Snek_si_play> {
 
     print("snek si play state init state called");
 
-    ss_bloc_inst = siBlocProvider.of<SnakeStartBloc>(context);
-    if (ss_bloc_inst != null) {
-      print("pfb has state, set listener");
-      if (ss_bloc_inst.exp_stream_has_listen == false) {
-        ss_bloc_inst.exp_stream_has_listen = true;
-        print("Check state for has listen return False, set Listeners ~~~ ");
-        loc_exp_stream = ss_bloc_inst.broadcast_exp_stream();
-        // print("loc exp stream ~~" + loc_exp_stream.toString());
+    Future.delayed(Duration.zero, () async {
+      ss_bloc_inst = snekStateProvider.of<SnakeStartBloc>(context);
+      if (ss_bloc_inst != null) {
+        print("pfb has state, set listener");
+        if (ss_bloc_inst.exp_stream_has_listen == false) {
+          ss_bloc_inst.exp_stream_has_listen = true;
+          print("Check state for has listen return False, set Listeners ~~~ ");
+          loc_exp_stream = ss_bloc_inst.broadcast_exp_stream();
+          // print("loc exp stream ~~" + loc_exp_stream.toString());
 
-        if (loc_exp_stream == "stop stream") {
-          print("stop stream");
-          return;
-        }
-
-        loc_exp_stream.listen((event) {
-          // print("exp stream listen event fire ~" + event.toString());
-
-          if (event.toString() == "false") {
-            // print("has to parse bool string");
-            setState(() {
-              loc_exp_state = false;
-            });
-          } else {
-            setState(() {
-              loc_exp_state = true;
-            });
+          if (loc_exp_stream == "stop stream") {
+            print("stop stream");
+            // return;
           }
-        });
+
+          loc_exp_stream.listen((event) {
+            print("exp stream listen event fire ~" + event.toString());
+
+            if (event.toString() == "false") {
+              // print("has to parse bool string");
+              setState(() {
+                loc_exp_state = false;
+              });
+            } else {
+              setState(() {
+                loc_exp_state = true;
+              });
+            }
+          });
+        }
       }
-    }
+    });
   }
 
   dispose() {
@@ -275,64 +334,67 @@ class _Snek_si_playState extends State<Snek_si_play> {
 
   @override
   Widget build(BuildContext context) {
-    if (loc_exp_stream == null) {
-      print("set loc exp listen in build");
-      ss_bloc_inst.exp_stream.asBroadcastStream().listen((event) {
-        print("EXP LISTENER FIRED");
-        var exp_event = false;
-        if (event.toString() == "true") {
-          exp_event = true;
-        }
-        setState(() {
-          loc_exp_state = exp_event;
-        });
-      });
+    print("build play state");
+    ss_bloc_inst = snekStateProvider.of<SnakeStartBloc>(context);
+
+
+var calccellsize;
+    calcCellSize(ss) {
+      var cellSize;
+      if (ss.width < 950) {
+        cellSize = (ss.width / 50) * .96;
+      } else {
+        cellSize = (950 / 50) * .96;
+      }
+      return cellSize;
     }
-    loc_exp_state = ss_bloc_inst.show_food_exp;
 
-// var test_head_pt_x = 15;
-// var test_head_pt_x = 30;
-// var test_head_pt_y = 15;
-// var test_head_pt_y = 30;
-
-// print("gamescreenwidth val ~ " + gameboard_width.toString());
-// top left
-// var exp_matx = - (1.88 * gamescreen_width) +  (1.55 * gamescreen_width);
-
-    var exp_matx = -(1.88 * gamescreen_width) +
-        (1.55 * gamescreen_width) +
-// + (( gamescreen_width /48 ) *test_head_pt_x );
-        ((gamescreen_width / 48) * ss_bloc_inst.head_pt.x);
-
-// top
-// var exp_maty = -300.0;
-// var exp_maty = 100.0;
-
-    print("screen width " + ss_bloc_inst.sscreen_size.width.toString());
-
-    var exp_maty = -300 +
-        .9 * (gameboard_width / 400) * (ss_bloc_inst.head_pt.y * (400 / 32));
-
-    gamespacer_left = ss_bloc_inst.sscreen_size.width * .2;
-    gameboard_width = ss_bloc_inst.sscreen_size.width * .72;
-    gamescreen_width = ss_bloc_inst.sscreen_size.width;
-    gamescreen_height = ss_bloc_inst.sscreen_size.height;
-    touch_control_row_width = ss_bloc_inst.sscreen_size.width;
+    var gameboardTopPadding = ss_bloc_inst.sscreen_size.width*.01;
+    calccellsize = calcCellSize(ss_bloc_inst.sscreen_size);
+    gameboard_width = calccellsize * 30;
+    gamespacer_left = (ss_bloc_inst.sscreen_size.width - gameboard_width - (touch_button_width * 2)) / 2;
     touch_button_width = ss_bloc_inst.sscreen_size.width * .14;
+
+    // gamescreen_width = ss_bloc_inst.sscreen_size.width;
+    // gamescreen_height = ss_bloc_inst.sscreen_size.height;
+    touch_control_row_width = ss_bloc_inst.sscreen_size.width;
+    // var explosion_size = ss_bloc_inst.sscreen_size.height;
+    var explosion_size;
+    if (ss_bloc_inst.sscreen_size.width> ss_bloc_inst.sscreen_size.height){
+       explosion_size = ss_bloc_inst.sscreen_size.height;
+    }
+    if (ss_bloc_inst.sscreen_size.width<= ss_bloc_inst.sscreen_size.height){
+      explosion_size = ss_bloc_inst.sscreen_size.width;
+    }
+      // point 10 = right
+      // point 01 = down
+      // point -10 = left
+      // point 0-1 = up
+
+    var exp_matx = (touch_button_width + gamespacer_left + calccellsize ) +
+        (ss_bloc_inst.head_pt.x * (gameboard_width / 30)) - (explosion_size/2)
+        + gameboardTopPadding;
+
+    var exp_maty =  (ss_bloc_inst.head_pt.y * (gameboard_width / 30)) + calccellsize
+        - (explosion_size/2)  + gameboardTopPadding;
+
+
+    print("exp matx ~ " + exp_matx.toString());
+    print('exp maty ~ ' + exp_maty.toString());
 
     return Scaffold(
         body: Container(
-      padding: EdgeInsets.zero,
+      padding: EdgeInsets.fromLTRB(0.0, gameboardTopPadding, 0.0, 0.0),
       width: ss_bloc_inst.sscreen_size.width,
       height: ss_bloc_inst.sscreen_size.height,
       color: Colors.blueGrey[900],
       child: Stack(
           // overflow:Overflow.visible,
-          clipBehavior: Clip.none,
+          // clipBehavior: Clip.none,
           children: [
-            Container(
-              padding: EdgeInsets.all(ss_bloc_inst.sscreen_size.height * .01),
-              height: ss_bloc_inst.sscreen_size.height,
+            Expanded(
+              // padding: EdgeInsets.all(ss_bloc_inst.sscreen_size.height * .01),
+              // height: ss_bloc_inst.sscreen_size.height,
               // child: Column(
               //     mainAxisAlignment: MainAxisAlignment.center,
               //     children: [
@@ -344,35 +406,45 @@ class _Snek_si_playState extends State<Snek_si_play> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Container(width: touch_button_width * 1.3),
-                    siBlocProvider<SnakeStartBloc>(
+                    Container(width: touch_button_width + gamespacer_left),
+                    // child:
+            snekStateProvider<SnakeStartBloc>(
                       bloc: ss_bloc_inst,
-                      child: Snake(),
-                    )
+                      child: Snake())
+                    // )
                   ]),
             ),
             // ])
             // ),
             loc_exp_state
                 ?
-                // ? OverflowBox(
-                //     minHeight: ss_bloc_inst.sscreen_size.height,
-                //     child:
-                Container(
+                 // OverflowBox(
+                 //    minHeight: ss_bloc_inst.sscreen_size.height ,
+                 //     minWidth: ss_bloc_inst.sscreen_size.height ,
+                 //     child:
+            // Container(
+            //   height: ss_bloc_inst.sscreen_size.height * 2,
+            //     width: ss_bloc_inst.sscreen_size.height * 2,
+            //     child: Stack(
+            //     clipBehavior: Clip.none,
+            //     children:[
+            Container(
                     transform:
                         Matrix4.translationValues(exp_matx, exp_maty, 0.0),
                     // color: Colors.purple,
-                    height: ss_bloc_inst.sscreen_size.height,
-                    width: gameboard_width * 2,
+                    height: explosion_size ,
+                    width: explosion_size ,
                     child: ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(
-                            ss_bloc_inst.sscreen_size.width / 3)),
+                            explosion_size /2)),
                         child: Opacity(
-                            opacity: .15,
+                            opacity: .3,
                             child: Image.asset(
                               "assets/veil_sn_exp.gif",
-                              fit: BoxFit.cover,
+                              fit: BoxFit.fill,
                             ))))
+          // ]
+      // ))
                 : Container(),
             Touch_Control_But(),
           ]),
@@ -391,13 +463,15 @@ class _Touch_Control_ButState extends State<Touch_Control_But> {
   Widget build(BuildContext context) {
     //print("REBUILD TOUCH CONTROL BUT ROW get snake state bloc");
     final SnakeStartBloc ss_bloc_inst =
-        siBlocProvider.of<SnakeStartBloc>(context);
+        snekStateProvider.of<SnakeStartBloc>(context);
     print("set dynamic board size vars 2");
+
     gamespacer_left = ss_bloc_inst.sscreen_size.width * .2;
-    gameboard_width = ss_bloc_inst.sscreen_size.width * .72;
-    gamescreen_width = ss_bloc_inst.sscreen_size.width * .95;
-    touch_control_row_width = ss_bloc_inst.sscreen_size.width;
     touch_button_width = ss_bloc_inst.sscreen_size.width * .14;
+    gameboard_width = ss_bloc_inst.sscreen_size.width * .72;
+    // gamescreen_width = ss_bloc_inst.sscreen_size.width * .95;
+    touch_control_row_width = ss_bloc_inst.sscreen_size.width;
+
 
     return Container(
       width: ss_bloc_inst.sscreen_size.width,
@@ -410,7 +484,7 @@ class _Touch_Control_ButState extends State<Touch_Control_But> {
               // color: Colors.teal,
               padding: EdgeInsets.all(6.0),
               child: ClipRRect(
-                  borderRadius: BorderRadius.circular(gss.width * .03),
+                  borderRadius: BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .03),
                   child:
 
                       // InkWell(
@@ -427,24 +501,25 @@ class _Touch_Control_ButState extends State<Touch_Control_But> {
                             // touch_controller.sink.add("LPress");
                             ss_bloc_inst.update_sink
                                 .add({"touchinput": "LPress"});
+
                             print("LEFT PRESS");
                           },
                           child: ClipRRect(
-                              // borderRadius: BorderRadius.circular(gss.width * .08),
+                              // borderRadius: BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .08),
                               borderRadius:
-                                  BorderRadius.circular(gss.width * .04),
+                                  BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .04),
                               child: Container(
                                   // color:Colors.black12,
-                                  // color: ss_bloc_inst.g_theme_color,
-                                  width: gss.width * .2,
+                                  color: ss_bloc_inst.g_theme_color,
+                                  width: ss_bloc_inst.sscreen_size.width * .2,
                                   // width: ss_bloc_inst.ib_width,
-                                  height: gss.height * .63,
-                                  padding: EdgeInsets.all(gss.width * .01),
+                                  height: ss_bloc_inst.sscreen_size.height * .63,
+                                  padding: EdgeInsets.all(ss_bloc_inst.sscreen_size.width * .01),
                                   child: ClipRRect(
                                       borderRadius: BorderRadius.circular(
-                                          gss.width * .04),
+                                          ss_bloc_inst.sscreen_size.width * .04),
                                       child: Container(
-                                        // width: gss.width * .64,
+                                        // width: ss_bloc_inst.sscreen_size.width * .64,
                                         color: Colors.black12,
                                         child: Center(
                                           child: Icon(Icons.chevron_left),
@@ -463,28 +538,27 @@ class _Touch_Control_ButState extends State<Touch_Control_But> {
             // color: Colors.teal,
             padding: EdgeInsets.all(6.0),
             child: ClipRRect(
-                borderRadius: BorderRadius.circular(gss.width * .03),
+                borderRadius: BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .03),
                 child: GestureDetector(
                     onTap: () {
                       print("RIGHT PRESS EXP");
                       ss_bloc_inst.update_sink.add({"touchinput": "RPress"});
 
-                      // touch_controller.sink.add("RPress");
                     },
                     child: ClipRRect(
-                        // borderRadius: BorderRadius.circular(gss.width * .08),
-                        borderRadius: BorderRadius.circular(gss.width * .04),
+                        // borderRadius: BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .08),
+                        borderRadius: BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .04),
                         child: Container(
-                            color: Colors.black12,
-                            // color: ss_bloc_inst.g_theme_color,
-                            width: gss.width * .2,
-                            height: gss.height * .63,
-                            padding: EdgeInsets.all(gss.width * .01),
+                            // color: Colors.black12,
+                            color: ss_bloc_inst.g_theme_color,
+                            width: ss_bloc_inst.sscreen_size.width * .2,
+                            height: ss_bloc_inst.sscreen_size.height * .63,
+                            padding: EdgeInsets.all(ss_bloc_inst.sscreen_size.width * .01),
                             child: ClipRRect(
                                 borderRadius:
-                                    BorderRadius.circular(gss.width * .04),
+                                    BorderRadius.circular(ss_bloc_inst.sscreen_size.width * .04),
                                 child: Container(
-                                  // width: gss.width * .64,
+                                  // width: ss_bloc_inst.sscreen_size.width * .64,
                                   color: Colors.black12,
                                   child: Center(
                                     child: Icon(Icons.chevron_right),

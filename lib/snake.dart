@@ -9,8 +9,10 @@ import 'main.dart';
 import 'score.dart';
 
 import 'snakeStartBloc.dart';
-import 'siBlocBase.dart';
+import 'snekStateBase.dart';
 import 'dart:ui' as ui;
+import 'package:image/image.dart' as image;
+import 'package:flutter/services.dart';
 
 const int rows = 33;
 const int columns = 33;
@@ -29,14 +31,6 @@ class Snake extends StatefulWidget {
 
 class SnakeState extends State<Snake> {
   math.Point oldDirection;
-
-  // Timer snake_game_timer;
-
-// delay for main timer in milliseconds
-  int sg_main_time_delay = 888;
-
-  final math.Random random = math.Random();
-
   static const double cellSize = 20.0;
 // var cellSize = 0.0;
 
@@ -57,146 +51,144 @@ class SnakeState extends State<Snake> {
 
   SnakeStartBloc ss_bloc_inst;
 
-  // @override
-  // void initState() {
-  //   // TODO: implement initState
 
-  //   super.initState();
-  // }
+  void _step() {
+    print("Game step ~~ STEP ~~");
+    if (ss_bloc_inst.game_over == true) {
+      print("GAME OVER in _step ~~ return ");
+      if (ss_bloc_inst.snake_game_timer != null) {
+        ss_bloc_inst.snake_game_timer.cancel();
+      }
+      return;
+    }
+
+    //print("step input setting :: " + input_setting.toString());
+// Reset both inputs to false anc check from state
+    var ss_bloc_inst_left = false;
+    var ss_bloc_inst_right = false;
+
+// Look for values from stream to override everything else
+    if (ss_bloc_inst.sub_val != null) {
+      if (ss_bloc_inst.sub_val == "RPress") {
+        ss_bloc_inst_right = true;
+      }
+
+      if (ss_bloc_inst.sub_val == "LPress") {
+        ss_bloc_inst_left = true;
+      }
+    }
+
+    if (ss_bloc_inst.sub_val == "return") {
+      ss_bloc_inst_left = false;
+      ss_bloc_inst_right = false;
+    }
+
+    //print("pass input calc");
+
+    ///#################################3
+    if (input_setting == "Touch") {
+      if (ss_bloc_inst_left == true) {
+        //print("ss_bloc_inst right true set");
+        ss_bloc_inst.newDirection = oldDirection == null
+            ? math.Point(0, 1)
+            : oldDirection == math.Point(-1, 0)
+                ? math.Point(0, 1)
+                : oldDirection == math.Point(0, 1)
+                    ? math.Point(1, 0)
+                    : oldDirection == math.Point(1, 0)
+                        ? math.Point(0, -1)
+                        : oldDirection == math.Point(0, -1)
+                            ? math.Point(-1, 0)
+                            : math.Point(0, 1);
+      } else if (ss_bloc_inst_right == true) {
+        //print("ss_bloc_inst left true set");
+        ss_bloc_inst.newDirection = oldDirection == null
+            ? math.Point(0, 1)
+            : oldDirection == math.Point(-1, 0)
+                ? math.Point(0, -1)
+                : oldDirection == math.Point(0, 1)
+                    ? math.Point(-1, 0)
+                    : oldDirection == math.Point(1, 0)
+                        ? math.Point(0, 1)
+                        : oldDirection == math.Point(0, -1)
+                            ? math.Point(1, 0)
+                            : math.Point(0, 1);
+      }
+      // Initial Direction,  vertical (0,1) or (0 ,-1)
+      // Horizontal (1,0) or (-1, 0)
+      // Diagonal top left  -> bottom right math.Point(1, 1) or math.Point(-1, -1)
+      // Diagonal top right  -> bottom left math.Point(1, -1) or math.Point(-1, 1)
+      else if (ss_bloc_inst_right == false && ss_bloc_inst_left == false) {
+        ss_bloc_inst.newDirection =
+            oldDirection == null ? math.Point(1, 0) : oldDirection;
+      }
+    }
+
+    oldDirection = ss_bloc_inst.newDirection;
+
+    if (ss_bloc_inst.game_over == true) {
+      // Future.delayed(Duration(milliseconds: 0), () {
+      WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => snekStateProvider<SnakeStartBloc>(
+                    bloc: ss_bloc_inst,
+                    child: SnekScore(ss_bloc_inst.score()))));
+      });
+    }
+
+    ss_bloc_inst.step(ss_bloc_inst.newDirection, ss_bloc_inst_stepper);
+    ss_bloc_inst.update_sink
+        .add({"touchinput": "return"});
+    if (
+        // ss_bloc_inst.head_pt.x < 0 ||
+        // ss_bloc_inst.head_pt.y < 0 ||
+
+// Infinite snek mode, go through walls
+        (ss_bloc_inst.collisions_on == true &&
+                ss_bloc_inst.head_pt.x == columns - 1) ||
+            (ss_bloc_inst.collisions_on == true &&
+                ss_bloc_inst.head_pt.y == rows - 1)) {
+      print("FOUND COLLISIONS TRUE ~~~~~~  ");
+      print("Ssbloc coll value ~  " + ss_bloc_inst.collisions_on.toString());
+      // ss_bloc_inst.head_pt.x == columns - 1  || ss_bloc_inst.head_pt.y == rows -1) {
+      //print("GAME OVER Resetting ss_bloc_inst ... ");
+      ss_bloc_inst.game_over = true;
+
+      var snek_score_final = ss_bloc_inst.score();
+
+      if (ss_bloc_inst.snake_game_timer != null) {
+        //print("cancel game timer");
+        ss_bloc_inst.snake_game_timer.cancel();
+      }
+
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => snekStateProvider<SnakeStartBloc>(
+                  bloc: ss_bloc_inst, child: SnekScore(snek_score_final))));
+    }
+  }
+
+  ss_bloc_inst_stepper() {
+    print("ss bloc inst stepper step");
+    setState(() {
+      _step();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     print(" Custom board panter builder parent build ~~");
 
-    ss_bloc_inst = siBlocProvider.of<SnakeStartBloc>(context);
-
-    void _step() {
-      print("Game step ~~ STEP ~~");
-      if (ss_bloc_inst.game_over == true) {
-        print("GAME OVER in _step ~~ return ");
-        if (ss_bloc_inst.snake_game_timer != null) {
-          ss_bloc_inst.snake_game_timer.cancel();
-        }
-        return;
-      }
-
-      //print("step input setting :: " + input_setting.toString());
-// Reset both inputs to false anc check from state
-      var ss_bloc_inst_left = false;
-      var ss_bloc_inst_right = false;
-
-// Look for values from stream to override everything else
-      if (ss_bloc_inst.sub_val != null) {
-        if (ss_bloc_inst.sub_val == "RPress") {
-          ss_bloc_inst_right = true;
-        }
-
-        if (ss_bloc_inst.sub_val == "LPress") {
-          ss_bloc_inst_left = true;
-        }
-      }
-
-      //print("pass input calc");
-
-      ///#################################3
-      if (input_setting == "Touch") {
-        if (ss_bloc_inst_left == true) {
-          //print("ss_bloc_inst right true set");
-          ss_bloc_inst.newDirection = oldDirection == null
-              ? math.Point(0, 1)
-              : oldDirection == math.Point(-1, 0)
-                  ? math.Point(0, 1)
-                  : oldDirection == math.Point(0, 1)
-                      ? math.Point(1, 0)
-                      : oldDirection == math.Point(1, 0)
-                          ? math.Point(0, -1)
-                          : oldDirection == math.Point(0, -1)
-                              ? math.Point(-1, 0)
-                              : math.Point(0, 1);
-        } else if (ss_bloc_inst_right == true) {
-          //print("ss_bloc_inst left true set");
-          ss_bloc_inst.newDirection = oldDirection == null
-              ? math.Point(0, 1)
-              : oldDirection == math.Point(-1, 0)
-                  ? math.Point(0, -1)
-                  : oldDirection == math.Point(0, 1)
-                      ? math.Point(-1, 0)
-                      : oldDirection == math.Point(1, 0)
-                          ? math.Point(0, 1)
-                          : oldDirection == math.Point(0, -1)
-                              ? math.Point(1, 0)
-                              : math.Point(0, 1);
-        }
-        // Initial Direction,  vertical (0,1) or (0 ,-1)
-        // Horizontal (1,0) or (-1, 0)
-        // Diagonal top left  -> bottom right math.Point(1, 1) or math.Point(-1, -1)
-        // Diagonal top right  -> bottom left math.Point(1, -1) or math.Point(-1, 1)
-        else if (ss_bloc_inst_right == false && ss_bloc_inst_left == false) {
-          ss_bloc_inst.newDirection =
-              oldDirection == null ? math.Point(1, 0) : oldDirection;
-        }
-      }
-      setState(() {
-        ss_bloc_inst.sub_val = null;
-      });
-
-      oldDirection = ss_bloc_inst.newDirection;
-
-      ss_bloc_inst_stepper() {
-        print("ss bloc inst stepper step");
-        setState(() {
-          _step();
-        });
-      }
-
-      if (ss_bloc_inst.game_over == true) {
-        // Future.delayed(Duration(milliseconds: 0), () {
-        WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => siBlocProvider<SnakeStartBloc>(
-                      bloc: ss_bloc_inst,
-                      child: SnekScore(ss_bloc_inst.score()))));
-        });
-      }
-
-      ss_bloc_inst.step(ss_bloc_inst.newDirection, ss_bloc_inst_stepper);
-      if (
-          // ss_bloc_inst.head_pt.x < 0 ||
-          // ss_bloc_inst.head_pt.y < 0 ||
-
-// Infinite snek mode, go through walls
-          (ss_bloc_inst.collisions_on == true &&
-                  ss_bloc_inst.head_pt.x == columns - 1) ||
-              (ss_bloc_inst.collisions_on == true &&
-                  ss_bloc_inst.head_pt.y == rows - 1)) {
-        print("FOUND COLLISIONS TRUE ~~~~~~  ");
-        print("Ssbloc coll value ~  " + ss_bloc_inst.collisions_on.toString());
-        // ss_bloc_inst.head_pt.x == columns - 1  || ss_bloc_inst.head_pt.y == rows -1) {
-        //print("GAME OVER Resetting ss_bloc_inst ... ");
-        ss_bloc_inst.game_over = true;
-
-        var snek_score_final = ss_bloc_inst.score();
-
-        if (ss_bloc_inst.snake_game_timer != null) {
-          //print("cancel game timer");
-          ss_bloc_inst.snake_game_timer.cancel();
-        }
-
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => siBlocProvider<SnakeStartBloc>(
-                    bloc: ss_bloc_inst, child: SnekScore(snek_score_final))));
-      }
-    }
+    ss_bloc_inst = snekStateProvider.of<SnakeStartBloc>(context);
 
     if (ss_bloc_inst == null) {
       print("state null, have to wait for state to build paint ...");
     } else {
       print("return sdp_board painter");
-      return siBlocProvider<SnakeStartBloc>(
+      return snekStateProvider<SnakeStartBloc>(
           bloc: ss_bloc_inst,
           child: SDP_Bloc_W(
               stepf: _step,
@@ -222,7 +214,7 @@ class _SDP_Bloc_WState extends State<SDP_Bloc_W> {
   SnakeStartBloc ss_bloc_inst;
 
   initState() {
-    ss_bloc_inst = siBlocProvider.of<SnakeStartBloc>(context);
+    ss_bloc_inst = snekStateProvider.of<SnakeStartBloc>(context);
 
     if (ss_bloc_inst.snake_game_timer != null) {
       print("cancel sdp  timer ... ");
@@ -250,11 +242,6 @@ class _SDP_Bloc_WState extends State<SDP_Bloc_W> {
                 widget.stepf();
               });
             }
-
-            // exp testing
-            // setState(() {
-            //   widget.sdp_state.show_food_exp = true;
-            // });
           }
         });
       }
@@ -303,16 +290,17 @@ class _SDP_Bloc_WState extends State<SDP_Bloc_W> {
 class SnakeBoard extends StatelessWidget {
   SnakeBoard({this.state, this.screensize, this.snake_game_timer});
 
+    SnakeStartBloc state;
   Size screensize;
   double cellSize;
-  SnakeStartBloc state;
+  SnakeStartBloc ss_bloc_inst;
   Timer snake_game_timer;
 
   @override
   Widget build(BuildContext context) {
     print("build snake board");
-    final SnakeStartBloc ss_bloc_inst =
-        siBlocProvider.of<SnakeStartBloc>(context);
+     ss_bloc_inst =
+        snekStateProvider.of<SnakeStartBloc>(context);
 
     var snake_eat_self = false;
 
@@ -340,7 +328,7 @@ class SnakeBoard extends StatelessWidget {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => siBlocProvider<SnakeStartBloc>(
+                builder: (context) => snekStateProvider<SnakeStartBloc>(
                     bloc: ss_bloc_inst,
                     child: SnekScore(ss_bloc_inst.score()))));
       });
@@ -364,8 +352,9 @@ class SnakeBoardPainter extends CustomPainter {
   //cell size is size of snake body pieces in pxls
   // double cellSize = 10.0;
 
-  void paint(Canvas canvas, Size size) {
-    print("paint snake");
+  void paint(Canvas canvas, Size size) async {
+    // print("paint snake");
+
     double cellSize;
     if (screensize.width < 950) {
       cellSize = (screensize.width / 50) * .96;
@@ -398,9 +387,7 @@ class SnakeBoardPainter extends CustomPainter {
       //vertical
       [Offset(0.0, 0.0), Offset(0.0, rows * cellSize)], //leftmost
       // [Offset(cellSize * 1,0.0), Offset(cellSize * 1, rows * cellSize)],//leftmost
-
       // [Offset(cellSize * 2,0.0), Offset(cellSize * 2, rows * cellSize )],
-
       // [Offset(cellSize * 3,0.0), Offset(cellSize * 3,rows * cellSize )],
       // [Offset(cellSize * 4,0.0), Offset(cellSize * 4, rows * cellSize )],
 
@@ -430,10 +417,6 @@ class SnakeBoardPainter extends CustomPainter {
       //   blackLine,
       // );
 
-      /// Draw snek body from state.body
-      /// Transport snek
-
-// transport with hacky limits
 
       for (math.Point<int> p in state.body) {
         // if (cellSize == null){ cellSize = state.sscreen_size.width / 30; }
@@ -460,11 +443,9 @@ class SnakeBoardPainter extends CustomPainter {
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         canvas.drawRect(Rect.fromPoints(a, b), blackFilled);
-        // canvas.drawImage(Image.asset('assets/bod_up_1.jpg'), Offset(a.dx,a.dy), Paint());
       }
 
-      // Draw food
-      // if (state.food_pt.x != 0) {
+// Draw food
       final Offset a =
           Offset(cellSize * state.food_pt.x, cellSize * state.food_pt.y);
 
@@ -472,7 +453,6 @@ class SnakeBoardPainter extends CustomPainter {
           cellSize * (state.food_pt.x + 1), cellSize * (state.food_pt.y + 1));
 
       canvas.drawRect(Rect.fromPoints(a, b), blackFilled);
-      // }
     }
   }
 

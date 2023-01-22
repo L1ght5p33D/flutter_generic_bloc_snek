@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-abstract class siBlocBase {
+abstract class snekStateBase {
   void dispose();
 }
 
-class _siBlocProviderState<T> extends State<siBlocProvider<siBlocBase>>{
+class _snekStateProviderState<T> extends State<snekStateProvider<snekStateBase>>{
   @override
   void dispose(){
     widget.bloc.dispose();
@@ -18,8 +18,8 @@ class _siBlocProviderState<T> extends State<siBlocProvider<siBlocBase>>{
 }
 
 // Generic BLoC provider
-class siBlocProvider<T extends siBlocBase> extends StatefulWidget {
-  siBlocProvider({
+class snekStateProvider<T extends snekStateBase> extends StatefulWidget {
+  snekStateProvider({
     Key key,
     @required this.child,
     @required this.bloc,
@@ -29,11 +29,11 @@ class siBlocProvider<T extends siBlocBase> extends StatefulWidget {
   final Widget child;
 
   @override
-  _siBlocProviderState<T> createState() => _siBlocProviderState<T>();
+  _snekStateProviderState<T> createState() => _snekStateProviderState<T>();
 
-  static T of<T extends siBlocBase>(BuildContext context){
+  static T of<T extends snekStateBase>(BuildContext context){
     // final type = _typeOf<BlocProvider<T>>();
-    final type = _typeOf<siBlocProvider<T>>();
+    final type = _typeOf<snekStateProvider<T>>();
 
     // https://dart.dev/guides/language/language-tour
     // class Foo<T extends SomeBaseClass> {
@@ -46,7 +46,7 @@ class siBlocProvider<T extends siBlocBase> extends StatefulWidget {
     // _BlocProviderInherited<T> provider = context.getElementForInheritedWidgetOfExactType<_BlocProviderInherited<T>>()?.widget;
 
     // could print type of findAncestor here ...
-    siBlocProvider<T> provider = context.findAncestorWidgetOfExactType();
+    snekStateProvider<T> provider = context.findAncestorWidgetOfExactType();
     return provider.bloc;
   }
 
