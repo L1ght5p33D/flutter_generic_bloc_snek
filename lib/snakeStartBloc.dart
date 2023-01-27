@@ -56,7 +56,7 @@ class SnakeStartBloc implements snekStateBase {
   bool collisions_on;
   bool game_over = false;
 
-  int food_reset_interval = 35;
+  int food_reset_interval = 45;
   int snake_length = 5;
 
   math.Point exp_pt = math.Point(0, 0);
@@ -77,6 +77,8 @@ class SnakeStartBloc implements snekStateBase {
   int show_food_exp_step;
   int exp_step_length_base = 6;
   int foods_captured;
+
+  int sg_last_time_delay = sg_main_time_delay;
 
   Timer snake_game_timer;
 
@@ -126,8 +128,9 @@ class SnakeStartBloc implements snekStateBase {
     // print("show food exp step ~ " + show_food_exp_step.toString());
 
     /// wait ten steps after showing explosion to turn off
-    if (step_count - show_food_exp_step >
-        exp_step_length_base + foods_captured) {
+    if ((step_count - show_food_exp_step >
+            exp_step_length_base + (foods_captured * 2)) &&
+        show_food_exp == true) {
       show_food_exp = false;
       exp_sink.add(false);
     }
@@ -142,7 +145,8 @@ class SnakeStartBloc implements snekStateBase {
     exp_pt = head_pt;
 
 // reset food if step_count is at interval
-    if (step_count % food_reset_interval == 0 && step_count != 0) {
+    if ((step_count + (5 * foods_captured)) - food_reset_interval == 0 &&
+        step_count != 0) {
       print("food set:: ");
       reset_food();
     }
@@ -171,6 +175,7 @@ class SnakeStartBloc implements snekStateBase {
       snake_length += 1;
 
       exp_sink.add(true);
+      show_food_exp = true;
       reset_food();
 
       // speed snake
@@ -179,17 +184,15 @@ class SnakeStartBloc implements snekStateBase {
         snake_game_timer.cancel();
       }
 
-      print(
-          "reset for level with foods captured ~ " + foods_captured.toString());
+      // print(
+      //     "reset for level with foods captured ~ " + foods_captured.toString());
       snake_game_timer = null;
-      snake_game_timer = Timer.periodic(
-          Duration(
-              milliseconds: (sg_main_time_delay -
-                      ((80 + foods_captured) *
-                          (foods_captured /
-                              ((foods_captured * foods_captured) * .5))))
-                  .toInt()), (_) {
-        print("snake game timer runnning");
+      sg_last_time_delay =
+          (sg_last_time_delay - (80 * math.pow(.76, foods_captured))).toInt();
+
+      snake_game_timer =
+          Timer.periodic(Duration(milliseconds: sg_last_time_delay), (_) {
+        // print("snake game timer runnning");
         state_stepper();
       });
     }

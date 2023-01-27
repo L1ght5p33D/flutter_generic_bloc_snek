@@ -382,7 +382,7 @@ class _Snek_si_playState extends State<Snek_si_play> {
           }
 
           loc_exp_stream.listen((event) {
-            print("exp stream listen event fire ~" + event.toString());
+            // print("exp stream listen event fire ~" + event.toString());
 
             if (event.toString() == "false") {
               // print("has to parse bool string");
@@ -408,7 +408,7 @@ class _Snek_si_playState extends State<Snek_si_play> {
 
   @override
   Widget build(BuildContext context) {
-    print("build play state");
+    // print("build play state");
     ss_bloc_inst = snekStateProvider.of<SnakeStartBloc>(context);
 
 // from SnakeBoardPainter .. pass as arg or in state later
@@ -457,8 +457,8 @@ class _Snek_si_playState extends State<Snek_si_play> {
         calccellsize -
         (explosion_size / 2);
 
-    print("exp matx ~ " + exp_matx.toString());
-    print('exp maty ~ ' + exp_maty.toString());
+    // print("exp matx ~ " + exp_matx.toString());
+    // print('exp maty ~ ' + exp_maty.toString());
 
     return Scaffold(
         body: Container(
@@ -470,27 +470,28 @@ class _Snek_si_playState extends State<Snek_si_play> {
           // overflow:Overflow.visible,
           // clipBehavior: Clip.none,
           children: [
-            Expanded(
-              // padding: EdgeInsets.all(ss_bloc_inst.sscreen_size.height * .01),
-              // height: ss_bloc_inst.sscreen_size.height,
-              // child: Column(
-              //     mainAxisAlignment: MainAxisAlignment.center,
-              //     children: [
-              //       Container(
-              //         height: gameboard_width,
-              // color:Colors.yellow,
-              child: Row(
-                  // mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Container(width: touch_button_width + gamespacer_left),
-                    // child:
-                    snekStateProvider<SnakeStartBloc>(
-                        bloc: ss_bloc_inst, child: Snake())
-                    // )
-                  ]),
-            ),
+            // Expanded(
+            // padding: EdgeInsets.all(ss_bloc_inst.sscreen_size.height * .01),
+            // height: ss_bloc_inst.sscreen_size.height,
+            // child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: [
+            //       Container(
+            //         height: gameboard_width,
+            // color:Colors.yellow,
+            // child:
+            Row(
+                // mainAxisSize: MainAxisSize.max,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(width: touch_button_width + gamespacer_left),
+                  // child:
+                  snekStateProvider<SnakeStartBloc>(
+                      bloc: ss_bloc_inst, child: Snake())
+                  // )
+                ]),
+            // ),
             // ])
             // ),
             loc_exp_state

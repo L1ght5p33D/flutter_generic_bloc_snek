@@ -3,11 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:exp_no_sense_snek_14/snakeStartBloc.dart';
-// import 'package:sensors/sensors.dart';
 import 'main.dart';
-// import 'snakeState.dart';
 import 'score.dart';
-
 import 'snakeStartBloc.dart';
 import 'snekStateBase.dart';
 import 'dart:ui' as ui;
@@ -32,7 +29,6 @@ class Snake extends StatefulWidget {
 class SnakeState extends State<Snake> {
   math.Point oldDirection;
   static const double cellSize = 20.0;
-// var cellSize = 0.0;
 
   @override
   void dispose() {
@@ -52,7 +48,7 @@ class SnakeState extends State<Snake> {
   SnakeStartBloc ss_bloc_inst;
 
   void _step() {
-    print("Game step ~~ STEP ~~");
+    // print("Game step ~~ STEP ~~");
     if (ss_bloc_inst.game_over == true) {
       print("GAME OVER in _step ~~ return ");
       if (ss_bloc_inst.snake_game_timer != null) {
@@ -149,10 +145,6 @@ class SnakeState extends State<Snake> {
                 ss_bloc_inst.head_pt.x == columns - 1) ||
             (ss_bloc_inst.collisions_on == true &&
                 ss_bloc_inst.head_pt.y == rows - 1)) {
-      print("FOUND COLLISIONS TRUE ~~~~~~  ");
-      print("Ssbloc coll value ~  " + ss_bloc_inst.collisions_on.toString());
-      // ss_bloc_inst.head_pt.x == columns - 1  || ss_bloc_inst.head_pt.y == rows -1) {
-      //print("GAME OVER Resetting ss_bloc_inst ... ");
       ss_bloc_inst.game_over = true;
 
       var snek_score_final = ss_bloc_inst.score();
@@ -179,14 +171,14 @@ class SnakeState extends State<Snake> {
 
   @override
   Widget build(BuildContext context) {
-    print(" Custom board panter builder parent build ~~");
+    // print(" Custom board panter builder parent build ~~");
 
     ss_bloc_inst = snekStateProvider.of<SnakeStartBloc>(context);
 
     if (ss_bloc_inst == null) {
       print("state null, have to wait for state to build paint ...");
     } else {
-      print("return sdp_board painter");
+      // print("return sdp_board painter");
       return snekStateProvider<SnakeStartBloc>(
           bloc: ss_bloc_inst,
           child: SDP_Bloc_W(
@@ -194,7 +186,7 @@ class SnakeState extends State<Snake> {
               sdp_state: ss_bloc_inst,
               sg_time_delay: sg_main_time_delay));
     }
-    print("skip new ssb ret container");
+    // print("skip new ssb ret container");
     return Container();
   }
 }
@@ -224,7 +216,7 @@ class _SDP_Bloc_WState extends State<SDP_Bloc_W> {
       if (widget.sdp_state != null) {
         ss_bloc_inst.snake_game_timer =
             Timer.periodic(Duration(milliseconds: widget.sg_time_delay), (_) {
-          print("MSG Step");
+          // print("MSG Step");
           if (mounted) {
             // call to check streams for values from input set in state
             // make step look at streams
@@ -256,7 +248,7 @@ class _SDP_Bloc_WState extends State<SDP_Bloc_W> {
 
   @override
   Widget build(BuildContext context) {
-    print("build sdp");
+    // print("build sdp");
 
     if (ss_bloc_inst == null) {
       // print("ss bloc inst null before board painter,, ret cont");
@@ -397,8 +389,8 @@ class SnakeBoardPainter extends CustomPainter {
       // [Offset(cellSize * columns / 2, 600.0), Offset(cellSize * rows / 2, rows * cellSize)],//center
     ];
     final gridpaint = Paint()
-      ..color = Colors.orange
-      ..strokeWidth = 1
+      ..color = state.g_theme_color
+      ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
     grid_pts.forEach((element) {
       canvas.drawLine(element[0], element[1], gridpaint);
