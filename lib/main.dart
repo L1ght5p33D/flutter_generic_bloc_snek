@@ -92,7 +92,6 @@ class _SnakeStartState extends State<SnakeStart> {
       siBlocProvider.of<SnakeStartBloc>(context);
     ss_bloc_inst.sscreen_size = MediaQuery.of(context).size;
 
-  ss_bloc_inst.ib_width = ss_bloc_inst.sscreen_size.width;
 
     if (ss_bloc_inst.update_stream_has_listen == false) {
       ss_bloc_inst.update_stream_has_listen = true;
@@ -113,6 +112,8 @@ class _SnakeStartState extends State<SnakeStart> {
     }
        // print("ss bloc input setting ~ "+ ss_bloc_inst.input_setting.toString());
     gss = MediaQuery.of(context).size;
+
+    print("GSS width ~ " + gss.width.toString());
 
     return Scaffold(
         body: Container(
@@ -338,42 +339,33 @@ dispose( ){
     // ss_bloc_inst =
     // siBlocProvider.of<SnakeStartBloc>(context);
   
-    // if (loc_exp_stream == null){
-    //   print("set loc exp listen in build");
-    //   ss_bloc_inst.exp_stream.asBroadcastStream().listen((event) {
-    //     print("EXP LISTENER FIRED");
-    //     var exp_event = false;
-    //     if (event.toString() == "true"){exp_event=true;}
-    //     setState(() {
-    //       loc_exp_state = exp_event;
-    //     });
-    //   });
-    // }
-    // loc_exp_state = ss_bloc_inst.show_food_exp;
+    if (loc_exp_stream == null){
+      print("set loc exp listen in build");
+      ss_bloc_inst.exp_stream.asBroadcastStream().listen((event) {
+        print("EXP LISTENER FIRED");
+        var exp_event = false;
+        if (event.toString() == "true"){exp_event=true;}
+        setState(() {
+          loc_exp_state = exp_event;
+        });
+      });
+    }
+    loc_exp_state = ss_bloc_inst.show_food_exp;
 
-loc_exp_state = true;
 
-var pcax;
-var pcay;
+// if (loc_exp_state == true){
+//     print(" exp pt :: x: " +
+//        ss_bloc_inst.exp_pt.x.toString() +
+//        ", y: " +
+//        ss_bloc_inst.exp_pt.y.toString());
+//     print("head point :: x: " +
+//        ss_bloc_inst.head_pt.x.toString() +
+//        ", y: " +
+//        ss_bloc_inst.head_pt.y.toString());
 
-if (loc_exp_state == true){
-    print(" exp pt :: x: " +
-       ss_bloc_inst.exp_pt.x.toString() +
-       ", y: " +
-       ss_bloc_inst.exp_pt.y.toString());
-    print("head point :: x: " +
-       ss_bloc_inst.head_pt.x.toString() +
-       ", y: " +
-       ss_bloc_inst.head_pt.y.toString());
+//          print("post compute exp stream align values");
 
-         print("post compute exp stream align values");
-   pcax = (-1) + (ss_bloc_inst.exp_pt.x.toDouble() * .05);
-  // pcax = 1.38;
-
-  // range -1 to 1 = 2, grid size 30
-
-  pcay = (-1) + (.05) * ss_bloc_inst.exp_pt.y.toDouble() ;
-}
+// }
 
     //print("ss_bloc_inst for some reason null ? ");
     //print("get theme color!"+ss_bloc_inst.g_theme_color.toString());
@@ -382,32 +374,30 @@ if (loc_exp_state == true){
 
     }
 
-    // each grid is 1.38 + .61 / 30 = .0663
-    
-    // ??? .116,
-    // bottom center .38,1.0
-    // center center .38, 0
-    // top center   .38, -1.0
-   // left     -.61,
-    //   right 1.38
-    //  second right       1.34
-   // second right 1.34 - .064 = 1.276,
-    //     second left - .58  =
 
-    //print("pre compute align vals ::: ");
-    //print(ss_bloc_inst.exp_pt.x.toString());
-    //print(ss_bloc_inst.exp_pt.y.toString());
+// var test_head_pt_x = 15;
+// var test_head_pt_x = 30;
+// var test_head_pt_y = 15;
+// var test_head_pt_y = 30;
 
+// print("gamescreenwidth val ~ " + gameboard_width.toString());
+// top left
+// var exp_matx = - (1.88 * gamescreen_width) +  (1.55 * gamescreen_width);
 
-    print("post compute exp align vals ::: ");
-    print("pcax::" + pcax.toString());
-    print("pcay::"+pcay.toString());
+var exp_matx = - (1.88 * gamescreen_width) +  (1.55 * gamescreen_width) +
+// + (( gamescreen_width /48 ) *test_head_pt_x );
+    (( gamescreen_width /48 ) *ss_bloc_inst.head_pt.x );
 
-    //print("ib width for board build :: " + ss_bloc_inst.ib_width.toString());
-   print("fin show exp state ~~ " + loc_exp_state.toString() + " ~~ ");
+// top
+// var exp_maty = -300.0;
+// var exp_maty = 100.0;
+
+print("screen width " + ss_bloc_inst.sscreen_size.width.toString());
+
+var exp_maty = -300 + .9 * (gameboard_width / 400) * (ss_bloc_inst.head_pt.y * ( 400 / 32 ));
+
   
 
-    print("set dynamic board size vars 0");
     gamespacer_left =  ss_bloc_inst.sscreen_size.width * .2;
   gameboard_width =  ss_bloc_inst.sscreen_size.width * .72;
   gamescreen_width = ss_bloc_inst.sscreen_size.width;
@@ -416,141 +406,56 @@ if (loc_exp_state == true){
   touch_control_row_width = ss_bloc_inst.sscreen_size.width;
   touch_button_width = ss_bloc_inst.sscreen_size.width * .14;
 
-    return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          // title: const Center(child:Text('Snek_SI')),
-        ),
-        body: Container(
-          padding: EdgeInsets.zero,
-          width: gamescreen_width,
-          height: gamescreen_height,
-            color: Colors.green,
-            child:
-            
-Stack(children:[
-  
-      Container(
-      color:Colors.yellow,
-    child:
-  Row(
-    mainAxisSize: MainAxisSize.max,
-    mainAxisAlignment: MainAxisAlignment.center,
-    children:[
- 
- Expanded(child:Center(child:
-    Container(
-      // color:Colors.purple,
-    child:
-  //  DecoratedBox(
-  //   decoration: BoxDecoration(
-  //     border: Border.all(width: 1.0, color: Colors.white),
-  //   ),
-    // child: 
-    SizedBox(
-      // height: rows * cellSize,
-      height: ss_bloc_inst.sscreen_size.height,
-      width: gameboard_width ,
-      //   width: MediaQuery.of(context).size.width / 2,
-      child:
-      // Stack(children: [
-                    siBlocProvider<SnakeStartBloc>(
-                    bloc:  ss_bloc_inst,
-                    child:
-                    Snake()
-          )
-
-    ),
- )
- )),
-  ])
-      ),
-                
-
-      //     Row(
-      //         mainAxisSize: MainAxisSize.max,
-      //           children:[
-      //  Container(
-      //    color:Colors.red,
-      //    width:touch_button_width),
-      //    Container(
-      //    height: gamescreen_height,
-      //    child: Column(
-      //      mainAxisSize:MainAxisSize.min,
-      //     // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      //     children: <Widget>[
-      //       Container(
-      //         // color:Colors.purple,
-      //         height: ss_bloc_inst.sscreen_size.height ,
-      //           // width: gameboard_width + ( gss.width * .1 )  ,
-      //           child: Stack(children: [
-           
-      //      // Show explosion gif from assets if loc exp state set true 
-      //          loc_exp_state
-      //                   ? SingleChildScrollView(
-      //                   physics: const NeverScrollableScrollPhysics(),
-      //                   // controller: controller,
-      //                   scrollDirection: Axis.horizontal,
-      //                   child:
-                        // Center(
-                            // child:
-                            // Container(
-                            //     width: _snakeColumns * _snakeCellSize,
-                            //     height: _snakeRows * _snakeCellSize,
-                                // Center(child:
-                                // Container(
-                                  // color:Colors.purple,
-                                  // child:
-                            SizedBox(
-                               width: gameboard_width *2  + ( gss.width * .1 )  ,
-                               height:ss_bloc_inst.sscreen_size.height * 2, 
-                                
-                                // ss_bloc_inst.sscreen_size.height,
-                                // width:gameboard_width * 2 ,
-                                // (ss_bloc_inst.sscreen_size.width) 
-                                // - (2 * ss_bloc_inst.ib_width),
-                                child:
-                              Align(
-                                            alignment: Alignment(
-                                                // align_exp_x ,
-                                                // align_exp_y
-                                            -1.04, -1.1
-                                              // pcax, pcay
-
-                                            ),
-                                            child:
-
-                                            Container(
-                                                width: gameboard_width,
-                                                height: gss.height,
-                                                  //  width: gameboard_width *.1,
-                                                // height: gss.height * .1,
-                                                child: Opacity(
-                                                  opacity:.3,
-                                                  child:
-                                                  Image.asset(
-                                                  
-                                                  "assets/veil_sn_exp.gif",
-                                                  fit: BoxFit.fill,
-                                                ))
-                                                )
-                                          )
-                                          ),     
-                                // ))
-                                        // ): Container(),
-                                    // )
-                // ])
-                // ),
-                          // ])
-                          // ),
-
-                // ]),
+    return
+        
 Container(
-  // width: touch_control_row_width * 1.5,
-    // color:Colors.transparent,
+  padding: EdgeInsets.zero,
+  // width: gamescreen_width,
+  // height: gamescreen_height*2,
+    color:Colors.blueGrey[900],
     child:
+    
+Stack(
+  // overflow:Overflow.visible,
+    clipBehavior:Clip.none,
+    children:[
+        Container(
+        // color:Colors.yellow,
+      child:
     Row(
-  children:[
+      // mainAxisSize: MainAxisSize.max,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children:[
+          Container(width:touch_button_width*1.1),
+
+                      siBlocProvider<SnakeStartBloc>(
+                      bloc:  ss_bloc_inst,
+                      child:
+                  
+                      Snake()
+            
+  ,)
+    ]),
+        ),
+                  
+  loc_exp_state ?
+      Container(
+      transform:Matrix4.translationValues(exp_matx,exp_maty,0.0),
+      color: Colors.purple,
+        width: gameboard_width * 4 ,
+        height: gameboard_width * 4 ,
+          //  width: gameboard_width *.1,
+        // height: gss.height * .1,
+        child: Opacity(
+          opacity:.3,
+          child:
+          Image.asset(
+          "assets/veil_sn_exp.gif",
+          fit: BoxFit.cover,
+        ))
+        ):Container(),
+
                   Touch_Control_But(
                     // input_setting: widget.input_setting,
                     // input_setting:"Touch",
@@ -559,38 +464,15 @@ Container(
                   ),
                   // ])
                   // ),
-
-                
-            // Touch_Control_But(
-            //   // input_setting: widget.input_setting,
-            //   // input_setting:"Touch",
-            //   // ctl_but_press: set_button_state,
-            //   // set_button_state: set_button_state
-            // ),
-            // Container(
-            //   height: gss.height*.2,
-            //     child: Row(
-            //         mainAxisAlignment: MainAxisAlignment.center,
-            //         children: <Widget>[
-            //           Text(
-            //             "Score: ${ss_bloc_inst.snake_length - 5}",
-            //             style: ui_ts_a,
-            //           )
-            //         ])),
-            Container(
-              color:Colors.yellow,
-              width: gamespacer_left,
-              
-            )
-          ],)//Row
-        )
         
 ])
-));
-  
-  }
-}
 
+);
+// );
+  
+  
+}
+}
 
 
 class Touch_Control_But extends StatefulWidget {
@@ -615,9 +497,6 @@ class _Touch_Control_ButState extends State<Touch_Control_But> {
     //print("REBUILD TOUCH CONTROL BUT ROW get snake state bloc");
     final SnakeStartBloc ss_bloc_inst =
     siBlocProvider.of<SnakeStartBloc>(context);
-    print("get button built width :: " + ss_bloc_inst.ib_width.toString());
-
-
     print("set dynamic board size vars 2");
     gamespacer_left =  ss_bloc_inst.sscreen_size.width * .2;
   gameboard_width =  ss_bloc_inst.sscreen_size.width * .72;
@@ -627,7 +506,7 @@ class _Touch_Control_ButState extends State<Touch_Control_But> {
   touch_button_width = ss_bloc_inst.sscreen_size.width * .14;
 
       return Container(
-      width:ss_bloc_inst.ib_width,
+      width:ss_bloc_inst.sscreen_size.width,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[

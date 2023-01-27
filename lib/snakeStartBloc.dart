@@ -126,7 +126,7 @@ class SnakeStartBloc implements siBlocBase {
     print("step count ~ " + step_count.toString());
 print("show food exp step ~ "+ show_food_exp_step.toString());
     /// wait ten steps after showing explosion to turn off
-    if (step_count - show_food_exp_step > 3) {
+    if (step_count - show_food_exp_step > 10) {
       show_food_exp = false;
       exp_sink.add(false);
     }
@@ -171,7 +171,6 @@ print("show food exp step ~ "+ show_food_exp_step.toString());
 
       exp_sink.add(true);
       reset_food();
-
 
     // speed snake 
       if (snake_game_timer != null) {

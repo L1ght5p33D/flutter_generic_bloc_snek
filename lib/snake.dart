@@ -178,10 +178,9 @@ class SnakeState extends State<Snake> {
       }
 
       if (ss_bloc_inst == null){
-        //print("state null, have to wait for state to build paint ...");
+        print("state null, have to wait for state to build paint ...");
         }else{
-        //print("return sdp_board painter");
-
+        print("return sdp_board painter");
         return
           siBlocProvider<SnakeStartBloc>(
             bloc: ss_bloc_inst,
@@ -269,32 +268,44 @@ class _SDP_Bloc_WState extends State<SDP_Bloc_W> {
   // return  CustomPaint(painter: SnakeBoardPainter(cellSize, ss_bloc_inst));
     // );
 
-    return SnakeBoard(state: ss_bloc_inst);
+    return SnakeBoard(state: ss_bloc_inst, screensize: ss_bloc_inst.sscreen_size);
   }
 }
 
 class SnakeBoard extends StatelessWidget {
-  SnakeBoard({this.state});
+  SnakeBoard({this.state, this.screensize});
 
+  Size screensize;
   double cellSize;
   SnakeStartBloc state;
 
   @override
   Widget build(BuildContext context) {
-  return CustomPaint(painter:   SnakeBoardPainter( state: state));
+  return CustomPaint(painter:   SnakeBoardPainter( state: state, screensize: screensize));
 
   }
 }
 
 class SnakeBoardPainter extends CustomPainter {
-  SnakeBoardPainter( {this.state});
+  SnakeBoardPainter( {this.state, this.screensize});
 
   final SnakeStartBloc state;
-
+  final Size screensize;
   //cell size is size of snake body pieces in pxls
-  final double cellSize = 10.0;
+  // double cellSize = 10.0;
+ 
 
   void paint(Canvas canvas, Size size) {
+
+
+     double cellSize;
+     if (screensize.width < 950){
+      cellSize = (screensize.width/50) * .96;
+     }
+    else{
+      cellSize = (950/50) * .96;
+    }
+
     if (state == null){
      // print("SNAKE PAINT STATE null return temp");
       return;
@@ -304,7 +315,8 @@ class SnakeBoardPainter extends CustomPainter {
 
     // draw grid for testing alignments
     List<List<Offset>> grid_pts = [
-      [Offset(0.0,cellSize * 1), Offset(columns * cellSize , cellSize * 1)],
+      [Offset(0.0, 0.0 ), Offset(columns * cellSize,0.0)], 
+      // [Offset(0.0,cellSize * 1), Offset(columns * cellSize,cellSize * 1)],
       // [Offset(0.0,cellSize * 2), Offset(columns * cellSize,cellSize * 2)],
       // [Offset(0.0,cellSize * 3), Offset(columns * cellSize,cellSize * 3)],
       // [Offset(0.0,cellSize * 4), Offset(columns * cellSize,cellSize * 4)],
@@ -312,8 +324,10 @@ class SnakeBoardPainter extends CustomPainter {
       // [Offset(0.0,cellSize * 6), Offset(columns * cellSize,cellSize * 6)],
       // [Offset(0.0,cellSize * 7), Offset(columns * cellSize,cellSize * 7)],
 
+      [Offset(0.0, cellSize * columns), Offset( cellSize * columns - 5.0 , cellSize* columns )],
       //vertical
-      [Offset(cellSize * 1,0.0), Offset(cellSize * 1, rows * cellSize)],//leftmost
+      [Offset(0.0 ,0.0), Offset(0.0 , rows * cellSize)],//leftmost
+      // [Offset(cellSize * 1,0.0), Offset(cellSize * 1, rows * cellSize)],//leftmost
       
       // [Offset(cellSize * 2,0.0), Offset(cellSize * 2, rows * cellSize )],
       
