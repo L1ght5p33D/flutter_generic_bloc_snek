@@ -8,7 +8,7 @@ import 'dart:ui' as ui;
 import 'package:image/image.dart' as image;
 
 // delay for main timer in milliseconds
-int sg_main_time_delay = 555;
+int sg_main_time_delay = 333;
 
 class SnakeStartBloc implements snekStateBase {
   // Defaults, or Game over (creates new instance) ?
@@ -36,6 +36,7 @@ class SnakeStartBloc implements snekStateBase {
     snake_length = 5;
     step_count = 0;
     show_food_exp_step = 0;
+
     foods_captured = 0;
     update_stream_has_listen = false;
     exp_stream_has_listen = false;
@@ -55,7 +56,7 @@ class SnakeStartBloc implements snekStateBase {
   bool collisions_on;
   bool game_over = false;
 
-  int food_reset_interval = 25;
+  int food_reset_interval = 35;
   int snake_length = 5;
 
   math.Point exp_pt = math.Point(0, 0);
@@ -74,6 +75,7 @@ class SnakeStartBloc implements snekStateBase {
   bool show_food_exp = false;
   // need to cut off explosion animation after a few steps
   int show_food_exp_step;
+  int exp_step_length_base = 6;
   int foods_captured;
 
   Timer snake_game_timer;
@@ -120,16 +122,17 @@ class SnakeStartBloc implements snekStateBase {
     //print("step food pos ::: " + food_pt.x.toString() + ", " + food_pt.y.toString());
     //print("step exp pos ::: " + exp_pt.x.toString() + ", " + exp_pt.y.toString());
     //print("Food pos ::: " + food_pt.toString());
-    print("step count ~ " + step_count.toString());
-    print("show food exp step ~ " + show_food_exp_step.toString());
+    // print("step count ~ " + step_count.toString());
+    // print("show food exp step ~ " + show_food_exp_step.toString());
 
     /// wait ten steps after showing explosion to turn off
-    if (step_count - show_food_exp_step > 3 + foods_captured) {
+    if (step_count - show_food_exp_step >
+        exp_step_length_base + foods_captured) {
       show_food_exp = false;
       exp_sink.add(false);
     }
 
-    print("Pre set body next direction :: " + direction.toString());
+    // print("Pre set body next direction :: " + direction.toString());
     math.Point<int> next = body.last + direction;
     next = math.Point<int>(next.x % columns, next.y % rows);
     head_pt = math.Point(next.x, next.y);
@@ -152,24 +155,23 @@ class SnakeStartBloc implements snekStateBase {
     // }
 
     //Testing explosions
-    exp_sink.add(true);
-    exp_pt = head_pt;
+    // exp_sink.add(true);
+    // exp_pt = head_pt;
 
     if (head_pt.x == food_pt.x && head_pt.y == food_pt.y) {
       print("WINRAR got food");
       show_food_exp = true;
 
       foods_captured += 1;
-      // set exp point for animation before calling sink
 
+      // set exp point for animation before calling sink
       exp_pt = head_pt;
       show_food_exp_step = step_count;
 
-      //  print("GOT FOOD");
       snake_length += 1;
 
       exp_sink.add(true);
-      // reset_food();
+      reset_food();
 
       // speed snake
       if (snake_game_timer != null) {
@@ -185,7 +187,7 @@ class SnakeStartBloc implements snekStateBase {
               milliseconds: (sg_main_time_delay -
                       ((80 + foods_captured) *
                           (foods_captured /
-                              ((foods_captured * foods_captured) * 1.05))))
+                              ((foods_captured * foods_captured) * .5))))
                   .toInt()), (_) {
         print("snake game timer runnning");
         state_stepper();

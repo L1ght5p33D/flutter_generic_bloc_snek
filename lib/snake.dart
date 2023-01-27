@@ -51,7 +51,6 @@ class SnakeState extends State<Snake> {
 
   SnakeStartBloc ss_bloc_inst;
 
-
   void _step() {
     print("Game step ~~ STEP ~~");
     if (ss_bloc_inst.game_over == true) {
@@ -139,8 +138,8 @@ class SnakeState extends State<Snake> {
     }
 
     ss_bloc_inst.step(ss_bloc_inst.newDirection, ss_bloc_inst_stepper);
-    ss_bloc_inst.update_sink
-        .add({"touchinput": "return"});
+    ss_bloc_inst.update_sink.add({"touchinput": "return"});
+
     if (
         // ss_bloc_inst.head_pt.x < 0 ||
         // ss_bloc_inst.head_pt.y < 0 ||
@@ -290,7 +289,7 @@ class _SDP_Bloc_WState extends State<SDP_Bloc_W> {
 class SnakeBoard extends StatelessWidget {
   SnakeBoard({this.state, this.screensize, this.snake_game_timer});
 
-    SnakeStartBloc state;
+  SnakeStartBloc state;
   Size screensize;
   double cellSize;
   SnakeStartBloc ss_bloc_inst;
@@ -298,9 +297,8 @@ class SnakeBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("build snake board");
-     ss_bloc_inst =
-        snekStateProvider.of<SnakeStartBloc>(context);
+    // print("build snake board");
+    ss_bloc_inst = snekStateProvider.of<SnakeStartBloc>(context);
 
     var snake_eat_self = false;
 
@@ -416,7 +414,6 @@ class SnakeBoardPainter extends CustomPainter {
       //   Rect.fromPoints(Offset.zero, size.bottomLeft(Offset.zero)),
       //   blackLine,
       // );
-
 
       for (math.Point<int> p in state.body) {
         // if (cellSize == null){ cellSize = state.sscreen_size.width / 30; }
