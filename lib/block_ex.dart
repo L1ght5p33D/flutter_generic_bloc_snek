@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-
 abstract class BlocBase {
   void dispose();
 }
@@ -12,7 +11,7 @@ class BlocProvider<T extends BlocBase> extends StatefulWidget {
     Key key,
     @required this.child,
     @required this.bloc,
-  }): super(key: key);
+  }) : super(key: key);
 
   final T bloc;
   final Widget child;
@@ -20,7 +19,7 @@ class BlocProvider<T extends BlocBase> extends StatefulWidget {
   @override
   _BlocProviderState<T> createState() => _BlocProviderState<T>();
 
-  static T of<T extends BlocBase>(BuildContext context){
+  static T of<T extends BlocBase>(BuildContext context) {
     // final type = _typeOf<BlocProvider<T>>();
     final type = _typeOf<BlocProvider<T>>();
 
@@ -42,16 +41,15 @@ class BlocProvider<T extends BlocBase> extends StatefulWidget {
   static Type _typeOf<T>() => T;
 }
 
-
-class _BlocProviderState<T> extends State<BlocProvider<BlocBase>>{
+class _BlocProviderState<T> extends State<BlocProvider<BlocBase>> {
   @override
-  void dispose(){
+  void dispose() {
     widget.bloc.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return widget.child;
   }
 }
@@ -62,7 +60,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Streams Demo',
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -75,27 +72,24 @@ class MyApp extends StatelessWidget {
 }
 
 class CounterPage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-
     final IncrementBloc ic_bloc_inst = BlocProvider.of<IncrementBloc>(context);
 
     return Scaffold(
       appBar: AppBar(title: Text('Stream version of the Counter App')),
       body: Center(
         child: StreamBuilder<int>(
-          // stream: bloc.outCounter,
-            stream:ic_bloc_inst.count_stream,
+            // stream: bloc.outCounter,
+            stream: ic_bloc_inst.count_stream,
             initialData: 0,
-            builder: (BuildContext context, AsyncSnapshot<int> snapshot){
+            builder: (BuildContext context, AsyncSnapshot<int> snapshot) {
               return Text('You hit me: ${ic_bloc_inst.bloc_counter} times');
-            }
-        ),
+            }),
       ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
-        onPressed: (){
+        onPressed: () {
           ic_bloc_inst._handleLogic(null);
         },
       ),
@@ -105,7 +99,6 @@ class CounterPage extends StatelessWidget {
 
 // Cannot create multiple
 class IncrementBloc implements BlocBase {
-
   Stream count_stream;
   int bloc_counter = 0;
 
@@ -115,44 +108,18 @@ class IncrementBloc implements BlocBase {
   // Sink getter to name input function
   StreamSink<int> get inAdd => counterController.sink;
 
-  Stream out_counter(){
-    Stream ic_bc_stream =  counterController.stream.asBroadcastStream();
+  Stream out_counter() {
+    Stream ic_bc_stream = counterController.stream.asBroadcastStream();
     count_stream = ic_bc_stream;
     return ic_bc_stream;
   }
 
-  void dispose(){
+  void dispose() {
     counterController.close();
   }
 
-  void _handleLogic(data){
+  void _handleLogic(data) {
     bloc_counter = bloc_counter + 1;
     //print("Counter call ~ " + bloc_counter.toString() );
   }
 }
-
-
-
-// With static
-// class IncrementBloc implements BlocBase {
-//   static int bloc_counter = 0;
-//   static StreamController<int> _counterController = StreamController<int>();
-//   static Stream<int>  outCounter = _counterController.stream.asBroadcastStream();
-//
-//   // Sink getter to name input function
-//   StreamSink<int> get inAdd => _counterController.sink;
-//
-//   IncrementBloc(){
-//     outCounter.listen(_handleLogic);
-//   }
-//
-//   void dispose(){
-//     _counterController.close();
-//   }
-//
-//   void _handleLogic(data){
-//     bloc_counter = bloc_counter + 1;
-//     print("Counter call ~ " + bloc_counter.toString() );
-//   }
-// }
-
